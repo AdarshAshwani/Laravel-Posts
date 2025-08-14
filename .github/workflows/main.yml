@@ -1,0 +1,209 @@
+name: Laravel Posts
+
+on:
+  push:          # run on ALL pushes (any branch)
+  pull_request:  # and on PRs
+
+permissions:
+  contents: write      # required to push version bumps/tags
+  pull-requests: read
+
+jobs:
+  quality:
+    name: Lint • Static Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2, cs2pr
+          extensions: mbstring, intl, pcntl, pdo_sqlite, bcmath, exif, gd
+          ini-values: |
+            memory_limit=1G
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Install Composer deps
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      # ---- Code Style (PHP-CS-Fixer) ----
+      - name: Install PHP-CS-Fixer
+        run: composer require --dev friendsofphp/php-cs-fixer:^3 --no-progress --no-interaction
+
+      - name: PHP-CS-Fixer (dry-run)
+        run: |
+          vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no --format=checkstyle | cs2pr
+
+      # ---- Static Analysis (Larastan/PHPStan) ----
+      - name: Install Larastan
+        run: composer require --dev nunomaduro/larastan:^2 --no-progress --no-interaction
+
+      - name: PHPStan
+        run: |
+          if [ -f phpstan.neon ] || [ -f phpstan.neon.dist ]; then
+            vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+          else
+            vendor/bin/phpstan analyse app --level=6 --no-progress --memory-limit=1G
+          fi
+
+  test:
+    name: Tests • Coverage • Vite Build • Audits
+    runs-on: ubuntu-latest
+    needs: quality
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      CACHE_DRIVER: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+      BROADCAST_DRIVER: log
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: xdebug
+          extensions: mbstring, intl, pcntl, pdo_sqlite, bcmath, exif, gd
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
+
+      - name: Install Composer deps
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: App optimizations
+        run: |
+          php artisan config:clear || true
+          php artisan cache:clear || true
+          php artisan route:clear || true
+          php artisan view:clear || true
+
+      # ---------- Frontend (Vite) ----------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install Node deps
+        if: hashFiles('package.json') != ''
+        run: npm ci
+
+      - name: Build assets (Vite)
+        if: hashFiles('package.json') != ''
+        run: npm run build --if-present
+
+      # ---------- DB & Tests ----------
+      - name: Migrate (SQLite memory)
+        run: php artisan migrate --no-interaction -vvv
+
+      - name: Run tests with coverage
+        run: |
+          if [ -f vendor/bin/pest ]; then
+            vendor/bin/pest --colors=always --coverage --coverage-clover=coverage.xml
+          else
+            vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml
+          fi
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # ---------- Audits (non-blocking) ----------
+      - name: Composer audit
+        run: composer audit || true
+      - name: NPM audit (prod only)
+        if: hashFiles('package.json') != ''
+        run: npm audit --omit=dev || true
+
+  # ----- Auto version bump & tag on push to main (after CI passes) -----
+  version_bump:
+    name: Bump Version • Tag
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # full history so we can tag
+
+      - name: Ensure .version exists (default 1.00.000)
+        run: |
+          if [ ! -f ".version" ]; then
+            echo "1.00.000" > .version
+          fi
+
+      - name: Bump version in .version (X.YY.ZZZ)
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=".version"
+          VER="$(tr -d ' \n\r' < "$FILE")"
+          MAJOR="$(echo "$VER" | cut -d. -f1)"
+          MINOR_RAW="$(echo "$VER" | cut -d. -f2)"
+          PATCH_RAW="$(echo "$VER" | cut -d. -f3)"
+          MINOR=$((10#$MINOR_RAW))
+          PATCH=$((10#$PATCH_RAW))
+
+          PATCH=$((PATCH + 1))
+          if [ $PATCH -gt 999 ]; then
+            PATCH=0
+            MINOR=$((MINOR + 1))
+          fi
+          if [ $MINOR -gt 99 ]; then
+            MINOR=0
+            MAJOR=$((MAJOR + 1))
+          fi
+
+          MINOR_PAD=$(printf "%02d" "$MINOR")
+          PATCH_PAD=$(printf "%03d" "$PATCH")
+          NEW_VER="${MAJOR}.${MINOR_PAD}.${PATCH_PAD}"
+          echo "$NEW_VER" > "$FILE"
+          echo "new_version=$NEW_VER" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version bump and tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .version
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+            git tag -a "v${{ steps.bump.outputs.new_version }}" -m "Version ${{ steps.bump.outputs.new_version }}"
+            git push --follow-tags
+          fi
