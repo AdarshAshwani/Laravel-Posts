@@ -1,4 +1,4 @@
-name: Laravel posts
+name: Laravel Posts
 
 on:
   push:          # run on ALL pushes (any branch)
@@ -85,30 +85,28 @@ jobs:
             echo "has_larastan=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Ensure phpstan.neon
+      - name: Ensure phpstan.neon (written via printf, no heredoc)
         shell: bash
         run: |
           if [ ! -f phpstan.neon ] && [ ! -f phpstan.neon.dist ]; then
             if [ "${{ steps.larastan.outputs.has_larastan }}" = "true" ]; then
-              cat > phpstan.neon <<'NEON'
-              includes:
-                - vendor/nunomaduro/larastan/extension.neon
-              parameters:
-                paths:
-                  - app
-                level: 6
-                checkMissingIterableValueType: true
-                memoryLimit: 1G
-              NEON
+              printf "%s\n" \
+              "includes:" \
+              "  - vendor/nunomaduro/larastan/extension.neon" \
+              "parameters:" \
+              "  paths:" \
+              "    - app" \
+              "  level: 6" \
+              "  checkMissingIterableValueType: true" \
+              "  memoryLimit: 1G" > phpstan.neon
             else
-              cat > phpstan.neon <<'NEON'
-              parameters:
-                paths:
-                  - app
-                level: 5
-                checkMissingIterableValueType: true
-                memoryLimit: 1G
-              NEON
+              printf "%s\n" \
+              "parameters:" \
+              "  paths:" \
+              "    - app" \
+              "  level: 5" \
+              "  checkMissingIterableValueType: true" \
+              "  memoryLimit: 1G" > phpstan.neon
             fi
           fi
 
@@ -117,8 +115,7 @@ jobs:
           if [ -f vendor/bin/phpstan ]; then
             vendor/bin/phpstan analyse --no-progress --memory-limit=1G
           else
-            # If Larastan installed without separate phpstan binary
-            vendor/bin/phpstan analyse --no-progress --memory-limit=1G || true
+            echo "phpstan binary missing; skipping analysis"
           fi
 
   test:
