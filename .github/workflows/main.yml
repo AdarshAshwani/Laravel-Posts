@@ -44,28 +44,26 @@ jobs:
       - name: Install PHP-CS-Fixer
         run: composer require --dev friendsofphp/php-cs-fixer:^3 --no-progress --no-interaction
 
-      # Create a default config if missing so Finder has paths (avoids your error)
+      # Create a default config if missing so Finder has paths (avoids Finder error)
       - name: Ensure PHP-CS-Fixer config
         run: |
           if [ ! -f .php-cs-fixer.php ] && [ ! -f .php-cs-fixer.dist.php ]; then
-            cat > .php-cs-fixer.dist.php <<'PHP'
-            <?php
-            $finder = PhpCsFixer\Finder::create()
-                ->in([__DIR__.'/app', __DIR__.'/config', __DIR__.'/database', __DIR__.'/routes', __DIR__.'/tests'])
-                ->name('*.php')
-                ->ignoreVCSIgnored(true)
-                ->exclude(['vendor','node_modules','storage','bootstrap/cache']);
-            return (new PhpCsFixer\Config())
-                ->setRiskyAllowed(true)
-                ->setFinder($finder)
-                ->setRules([
-                    '@PSR12' => true,
-                    'array_syntax' => ['syntax' => 'short'],
-                    'no_unused_imports' => true,
-                    'ordered_imports' => true,
-                    'single_quote' => true,
-                ]);
-            PHP
+            printf "%s\n" "<?php" \
+            "\$finder = PhpCsFixer\\Finder::create()" \
+            "    ->in([__DIR__.'/app', __DIR__.'/config', __DIR__.'/database', __DIR__.'/routes', __DIR__.'/tests'])" \
+            "    ->name('*.php')" \
+            "    ->ignoreVCSIgnored(true)" \
+            "    ->exclude(['vendor','node_modules','storage','bootstrap/cache']);" \
+            "return (new PhpCsFixer\\Config())" \
+            "    ->setRiskyAllowed(true)" \
+            "    ->setFinder(\$finder)" \
+            "    ->setRules([" \
+            "        '@PSR12' => true," \
+            "        'array_syntax' => ['syntax' => 'short']," \
+            "        'no_unused_imports' => true," \
+            "        'ordered_imports' => true," \
+            "        'single_quote' => true," \
+            "    ]);" > .php-cs-fixer.dist.php
           fi
 
       - name: PHP-CS-Fixer (dry-run with PR annotations)
