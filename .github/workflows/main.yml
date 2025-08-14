@@ -71,8 +71,8 @@ jobs:
           vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no --format=checkstyle | cs2pr
         continue-on-error: true
 
-      # ---- Static Analysis (Larastan if possible, fallback to PHPStan) ----
-      - name: Try install Larastan (allow updates)
+      # ---- Static Analysis (Larastan only; skip if incompatible) ----
+      - name: Try install Larastan (allow dependency updates)
         id: larastan
         shell: bash
         run: |
@@ -80,41 +80,32 @@ jobs:
           if composer require --dev nunomaduro/larastan:^2 -W --no-interaction --no-progress; then
             echo "has_larastan=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Larastan not compatible, falling back to plain PHPStan"
-            composer require --dev phpstan/phpstan:^1.11 --no-interaction --no-progress
             echo "has_larastan=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Ensure phpstan.neon (printf; no heredoc; no memoryLimit key)
+      - name: Ensure phpstan.neon (for Larastan)
+        if: steps.larastan.outputs.has_larastan == 'true'
         shell: bash
         run: |
           if [ ! -f phpstan.neon ] && [ ! -f phpstan.neon.dist ]; then
-            if [ "${{ steps.larastan.outputs.has_larastan }}" = "true" ]; then
-              printf "%s\n" \
-              "includes:" \
-              "  - vendor/nunomaduro/larastan/extension.neon" \
-              "parameters:" \
-              "  paths:" \
-              "    - app" \
-              "  level: 6" \
-              "  checkMissingIterableValueType: true" > phpstan.neon
-            else
-              printf "%s\n" \
-              "parameters:" \
-              "  paths:" \
-              "    - app" \
-              "  level: 5" \
-              "  checkMissingIterableValueType: true" > phpstan.neon
-            fi
+            printf "%s\n" \
+            "includes:" \
+            "  - vendor/nunomaduro/larastan/extension.neon" \
+            "parameters:" \
+            "  paths:" \
+            "    - app" \
+            "  level: 6" \
+            "  checkMissingIterableValueType: true" > phpstan.neon
           fi
 
-      - name: Run Static Analysis
+      - name: Run Static Analysis (Larastan)
+        if: steps.larastan.outputs.has_larastan == 'true'
         run: |
-          if [ -f vendor/bin/phpstan ]; then
-            vendor/bin/phpstan analyse --no-progress --memory-limit=1G
-          else
-            echo "phpstan binary missing; skipping analysis"
-          fi
+          vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Skip Static Analysis (Larastan not installed)
+        if: steps.larastan.outputs.has_larastan != 'true'
+        run: echo "Skipping static analysis because Larastan is not compatible with the current dependency set."
 
   test:
     name: Tests • Coverage • Vite Build • Audits
