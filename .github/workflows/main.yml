@@ -5,7 +5,7 @@ on:
   pull_request:  # and on PRs
 
 permissions:
-  contents: write      # required to push version bumps/tags
+  contents: write
   pull-requests: read
 
 jobs:
@@ -44,7 +44,6 @@ jobs:
       - name: Install PHP-CS-Fixer
         run: composer require --dev friendsofphp/php-cs-fixer:^3 --no-progress --no-interaction
 
-      # Create a default config if missing so Finder has paths (avoids Finder error)
       - name: Ensure PHP-CS-Fixer config
         run: |
           if [ ! -f .php-cs-fixer.php ] && [ ! -f .php-cs-fixer.dist.php ]; then
@@ -101,7 +100,7 @@ jobs:
       - name: Run Static Analysis (Larastan)
         if: steps.larastan.outputs.has_larastan == 'true'
         run: |
-          vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+          php vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
       - name: Skip Static Analysis (Larastan not installed)
         if: steps.larastan.outputs.has_larastan != 'true'
@@ -172,12 +171,12 @@ jobs:
       - name: Migrate (SQLite memory)
         run: php artisan migrate --no-interaction -vvv
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage (Pest/PHPUnit via PHP)
         run: |
           if [ -f vendor/bin/pest ]; then
-            vendor/bin/pest --colors=always --coverage --coverage-clover=coverage.xml
+            php -d xdebug.mode=coverage vendor/bin/pest --colors=always --coverage --coverage-clover=coverage.xml
           else
-            vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml
+            php -d xdebug.mode=coverage vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml
           fi
 
       - name: Upload coverage artifact
@@ -205,7 +204,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0    # full history so we can tag
+          fetch-depth: 0
 
       - name: Ensure .version exists (default 1.00.000)
         run: |
