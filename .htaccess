@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # if it's already /public, skip
+  RewriteRule ^public/ - [L]
+
+  # serve real files/dirs from /public
+  RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+  RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+  RewriteRule ^(.*)$ public/$1 [L]
+
+  # send everything else to Laravel
+  RewriteRule ^.*$ public/index.php [L]
+</IfModule>

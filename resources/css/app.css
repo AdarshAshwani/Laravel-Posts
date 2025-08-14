@@ -1,0 +1,581 @@
+/* --- Tailwind v4 entry & sources --- */
+@import 'tailwindcss';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/* --- Base --- */
+:root{
+  --wb-bg: 255 255 255;      /* page bg (light) */
+  --wb-fg: 15 23 42;         /* slate-900 */
+  --wb-blue: 37 99 235;      /* blue-600 */
+  --wb-blue-700: 29 78 216;  /* blue-700 */
+  --wb-ring: 37 99 235;      /* focus halo */
+}
+.dark:root{
+  --wb-bg: 2 6 23;           /* near slate-950 */
+  --wb-fg: 226 232 240;      /* slate-200 */
+}
+html,body{height:100%}
+body{
+  color: rgb(var(--wb-fg));
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,.08), transparent 60%),
+    radial-gradient(1000px 500px at 120% 10%, rgba(99,102,241,.08), transparent 60%),
+    rgb(var(--wb-bg));
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering: optimizeLegibility;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+/* --- Utility helpers --- */
+.glass { backdrop-filter: saturate(160%) blur(14px); }
+.surface { @apply bg-white/90 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800/70; }
+.surface-strong { @apply bg-white/95 dark:bg-slate-900/80; }
+.ring-brand { box-shadow: 0 0 0 2px rgba(var(--wb-ring), .5); }
+
+/* Cards */
+.soft-card {
+  @apply rounded-2xl shadow-sm p-5
+         bg-white/90 dark:bg-slate-900/70
+         border border-slate-200/70 dark:border-slate-800/70;
+}
+.soft-card-hover { @apply transition will-change-transform; }
+.soft-card-hover:hover { @apply shadow-lg -translate-y-0.5; }
+
+/* Display title */
+.display-title {
+  @apply text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent;
+  background-image: linear-gradient(90deg, #0f172a, #475569);
+}
+.dark .display-title {
+  background-image: linear-gradient(90deg, #ffffff, #e2e8f0);
+}
+
+/* Buttons */
+.btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition focus:outline-none; }
+
+.btn-primary {
+  @apply inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition focus:outline-none text-white shadow;
+  background: linear-gradient(135deg, rgb(var(--wb-blue)) 0%, rgb(var(--wb-blue-700)) 100%);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 18px -12px rgba(37,99,235,.6); }
+
+.btn-ghost {
+  @apply inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition focus:outline-none
+         border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60;
+}
+.btn-ghost:hover { @apply bg-slate-50 dark:bg-slate-800; }
+
+/* Nav item */
+.nav-item{ @apply flex items-center gap-3 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 transition; }
+.nav-item:hover{ @apply bg-slate-50 dark:bg-slate-800; }
+.nav-item-active{
+  background: linear-gradient(180deg, rgba(37,99,235,.12), rgba(37,99,235,.06));
+  @apply text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/40;
+}
+
+/* Inputs */
+.input {
+  @apply w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 px-4 py-2.5 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+/* Spotlight hover (generic) */
+.spotlight { position: relative; overflow: hidden; }
+.spotlight::after{
+  content:''; position:absolute; inset:-1px;
+  background: radial-gradient(600px 160px at var(--x, 50%) var(--y, 50%), rgba(37,99,235,.12), transparent 40%);
+  opacity:0; transition: opacity .25s ease; pointer-events:none;
+}
+.spotlight:hover::after{ opacity:1; }
+
+/* Centered toast under topbar (works in light & dark) */
+.toast{
+  position: fixed;
+  z-index: 9999;                           /* above everything */
+  left: 50%;
+  top: var(--toast-top, 84px);             /* set from JS; default 84px */
+  transform: translate(-50%, -8px) scale(.98);
+  opacity: 0;
+  pointer-events: none;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid;
+  backdrop-filter: saturate(160%) blur(10px);
+  transition: opacity .18s ease, transform .18s ease;
+  box-shadow:
+    0 12px 40px -18px rgba(2,6,23,.35),
+    0 2px 10px rgba(2,6,23,.18);
+}
+.toast.is-visible{
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+/* Light mode — dark chip for contrast on white pages */
+html:not(.dark) .toast{
+  background: #0f172a;        /* slate-900 */
+  border-color: #e2e8f0;      /* slate-200 */
+  color: #ffffff;
+}
+
+/* Dark mode */
+html.dark .toast{
+  background: rgba(11,18,32,.96);
+  border-color: #1f2937;      /* slate-800 */
+  color: #e5e7eb;             /* slate-200 */
+}
+
+
+/* Media-required error highlight (works in light & dark) */
+.input.is-invalid{ border-color:#ef4444 !important; box-shadow:0 0 0 2px rgba(239,68,68,.25) !important; }
+.uploader.is-invalid{ border-color:#ef4444 !important; background-color:rgba(239,68,68,.05) !important; }
+html.dark .uploader.is-invalid{ background-color:rgba(239,68,68,.12) !important; }
+
+/* Composer (self-contained, with spotlight) */
+.composer-launch {
+  @apply w-full text-left rounded-2xl p-4 flex items-center gap-3 cursor-pointer
+         shadow-sm transition will-change-transform
+         bg-white/90 dark:bg-slate-900/70
+         border border-slate-200/70 dark:border-slate-800/70;
+  position: relative; overflow: hidden;
+}
+.composer-launch:hover { @apply shadow-lg -translate-y-0.5; }
+.composer-launch::after{
+  content:''; position:absolute; inset:-1px;
+  background: radial-gradient(600px 160px at var(--x, 50%) var(--y, 50%), rgba(37,99,235,.12), transparent 40%);
+  opacity:0; transition: opacity .25s ease; pointer-events:none;
+}
+.composer-launch:hover::after{ opacity:1; }
+
+/* Misc components */
+.uploader { @apply mt-3 rounded-xl border-2 border-dashed border-slate-300 bg-blue-50/40 p-4 text-sm text-slate-600 cursor-pointer transition dark:border-slate-600 dark:bg-slate-900/40; }
+.uploader-active { @apply border-blue-400 bg-blue-100/40; }
+.chip { @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 transition; }
+.chip:hover { @apply bg-slate-100; }
+.avatar-gradient { @apply w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-white; }
+
+/* Media */
+.media-frame { @apply overflow-hidden rounded-xl bg-black; }
+
+/* Motion preferences */
+@media (prefers-reduced-motion: reduce){
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
+/* =========================================
+   LIGHT MODE POLISH (applies when .dark is NOT set)
+   ========================================= */
+html:not(.dark) body{
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,.05), transparent 60%),
+    radial-gradient(1000px 500px at 120% 10%, rgba(99,102,241,.05), transparent 60%),
+    #ffffff;
+  color: rgb(15 23 42);
+}
+
+/* Topbar: airy glass, crisp border */
+html:not(.dark) header.glass{
+  background: rgba(255,255,255,.88);
+  border-color: rgba(226,232,240,.8);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+}
+
+/* Sidebar: true white card with gentle shadow */
+html:not(.dark) #sidebar{
+  background: #ffffff;
+  border-right: 1px solid rgb(226 232 240);
+  box-shadow: 0 10px 30px -20px rgba(2,6,23,.1);
+}
+
+/* Active nav item: blue-tinted pill, clear text */
+html:not(.dark) .nav-item-active{
+  background: linear-gradient(180deg, rgba(59,130,246,.12), rgba(59,130,246,.06));
+  border: 1px solid rgba(59,130,246,.25);
+  color: rgb(29 78 216);
+}
+
+/* Cards: bright white, higher elevation on hover */
+html:not(.dark) .soft-card{
+  background: #ffffff;
+  border: 1px solid rgb(226 232 240);
+  box-shadow: 0 1px 2px rgba(2,6,23,.04), 0 10px 30px -20px rgba(2,6,23,.15);
+}
+html:not(.dark) .soft-card-hover:hover{
+  box-shadow: 0 6px 18px -8px rgba(2,6,23,.18), 0 1px 2px rgba(2,6,23,.06);
+  transform: translateY(-2px);
+}
+
+/* Composer: match card brightness */
+html:not(.dark) .composer-launch{
+  background: #ffffff;
+  border-color: rgb(226 232 240);
+}
+
+/* Inputs: pure white fields, crisp focus ring */
+html:not(.dark) .input{
+  background: #ffffff;
+  border-color: rgb(226 232 240);
+  box-shadow: inset 0 1px 0 rgba(2,6,23,.02);
+}
+html:not(.dark) .input:focus{
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(59,130,246,.15),
+    inset 0 1px 0 rgba(2,6,23,.02);
+  border-color: rgba(59,130,246,.35);
+}
+
+/* Media frames stay dark for contrast */
+html:not(.dark) .media-frame{ background: #0b1020; }
+
+/* Ghost buttons lighter on white */
+html:not(.dark) .btn-ghost{
+  background: rgba(255,255,255,.9);
+  border-color: rgb(226 232 240);
+}
+html:not(.dark) .btn-ghost:hover{ background: rgb(248 250 252); }
+
+/* Avatar ring looks cleaner on white */
+html:not(.dark) .avatar-gradient,
+html:not(.dark) .w-8.h-8.rounded-xl{
+  box-shadow: 0 0 0 2px rgba(255,255,255,.9);
+}
+
+/* Toast: softer dark-on-light contrast */
+html:not(.dark) .toast{
+  background: rgba(15,23,42,.95);
+  border-color: rgba(100,116,139,.35);
+}
+
+/* Pagination polish (if used) */
+html:not(.dark) nav[role="navigation"] .relative.inline-flex.items-center{
+  background: #fff;
+  border: 1px solid rgb(226 232 240);
+}
+/* =========================================
+   LIGHT MODE CONTRAST TWEAKS (feed + cards)
+   ========================================= */
+
+/* Make cards a bit darker than pure white so they stand off the page */
+html:not(.dark) article.soft-card,
+html:not(.dark) .soft-card.feed-card {
+  /* soft neutral surface (between white and slate-50) */
+  background: #f7f9fc;                   /* slightly darker than #fff */
+  border-color: #e2e8f0;                 /* slate-200 */
+  box-shadow:
+    0 1px 2px rgba(2,6,23,.05),
+    0 8px 24px -18px rgba(2,6,23,.22);
+}
+
+/* If you also want the composer to match the card tone */
+html:not(.dark) .composer-launch{
+  background: #f7f9fc;
+  border-color: #e2e8f0;
+}
+
+/* Strengthen body copy inside cards */
+html:not(.dark) article.soft-card p,
+html:not(.dark) article.soft-card li,
+html:not(.dark) article.soft-card blockquote {
+  color: #334155;                        /* slate-700 */
+  line-height: 1.75;
+}
+
+/* Headings & strong text inside cards */
+html:not(.dark) article.soft-card h1,
+html:not(.dark) article.soft-card h2,
+html:not(.dark) article.soft-card h3,
+html:not(.dark) article.soft-card h4,
+html:not(.dark) article.soft-card h5,
+html:not(.dark) article.soft-card h6,
+html:not(.dark) article.soft-card strong {
+  color: #0f172a;                        /* slate-900 */
+}
+
+/* Muted metadata (timestamps, separators) */
+html:not(.dark) article.soft-card .text-slate-400,
+html:not(.dark) article.soft-card .text-slate-500,
+html:not(.dark) article.soft-card time {
+  color: #64748b !important;             /* slate-500 */
+}
+
+/* Inputs: ensure legible text/placeholder on white */
+html:not(.dark) .input{
+  color: #0f172a;                         /* slate-900 */
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+html:not(.dark) .input::placeholder{
+  color: #94a3b8;                        /* slate-400 */
+}
+
+/* Optional: lift the header title contrast a touch */
+html:not(.dark) .display-title{
+  background-image: linear-gradient(90deg, #0f172a, #1f2937); /* slate-900 → gray-800 */
+}
+/* =========================================
+   LIGHT MODE — SIDEBAR / TOPBAR / USER MENU
+   ========================================= */
+
+/* Sidebar shell */
+html:not(.dark) #sidebar{
+  background:#ffffff;
+  border-right:1px solid #e2e8f0;                 /* slate-200 */
+  box-shadow: 0 10px 30px -24px rgba(2,6,23,.18);
+}
+
+/* Sidebar links */
+html:not(.dark) #sidebar .nav-item{ color:#0f172a; }      /* slate-900 */
+html:not(.dark) #sidebar .nav-item svg{ opacity:.7; }
+html:not(.dark) #sidebar .nav-item:hover{ background:#f8fafc; }  /* slate-50 */
+
+/* Active link pill */
+html:not(.dark) #sidebar .nav-item-active{
+  background: linear-gradient(180deg, rgba(59,130,246,.10), rgba(59,130,246,.06));
+  border:1px solid rgba(59,130,246,.28);
+  color:#1d4ed8;  /* blue-700 */
+}
+
+/* Sidebar footer strip (where Toggle/Logout live) */
+html:not(.dark) #sidebar > .mt-auto{
+  background: rgba(255,255,255,.96);
+  border-top:1px solid #e2e8f0 !important;
+}
+
+/* Topbar glass + divider */
+html:not(.dark) header.glass{
+  background: rgba(255,255,255,.92);
+  border-bottom:1px solid #e2e8f0;
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+}
+
+/* Topbar left subtle text (“Community Feed” breadcrumb area) */
+html:not(.dark) header.glass .text-slate-500{ color:#475569 !important; } /* slate-600ish */
+
+/* Topbar search */
+html:not(.dark) header.glass .input{
+  background:#ffffff;
+  border-color:#e2e8f0;
+  color:#0f172a;
+}
+html:not(.dark) header.glass .input::placeholder{ color:#94a3b8; } /* slate-400 */
+
+/* User menu dropdown (Profile/Settings/Logout) */
+html:not(.dark) #user-menu{
+  background:#ffffff !important;
+  border:1px solid #e2e8f0 !important;
+  box-shadow: 0 16px 40px -24px rgba(2,6,23,.35);
+}
+html:not(.dark) #user-menu a{
+  color:#0f172a;
+}
+html:not(.dark) #user-menu a:hover{
+  background:#f8fafc; /* slate-50 */
+}
+html:not(.dark) #user-menu .border-t{ border-color:#e2e8f0 !important; }
+html:not(.dark) #user-menu button{ color:#dc2626; }                  /* Logout */
+html:not(.dark) #user-menu button:hover{ background:rgba(220,38,38,.06); }
+
+/* Cards + composer: slightly tinted so they stand off the page */
+html:not(.dark) article.soft-card,
+html:not(.dark) .composer-launch{
+  background:#f7f9fc;
+  border-color:#e2e8f0;
+  box-shadow:
+    0 1px 2px rgba(2,6,23,.05),
+    0 8px 24px -18px rgba(2,6,23,.20);
+}
+
+/* Post text contrast */
+html:not(.dark) article.soft-card p,
+html:not(.dark) article.soft-card li{ color:#334155; line-height:1.75; } /* slate-700 */
+html:not(.dark) article.soft-card h1,
+html:not(.dark) article.soft-card h2,
+html:not(.dark) article.soft-card h3,
+html:not(.dark) article.soft-card strong{ color:#0f172a; }               /* slate-900 */
+html:not(.dark) article.soft-card .text-slate-500,
+html:not(.dark) article.soft-card time{ color:#64748b !important; }      /* slate-500 */
+
+/* =========================================
+   LIGHT MODE — POST ACTIONS (Edit / Delete / Share)
+   ========================================= */
+
+/* Stronger default color for actions */
+html:not(.dark) article.soft-card footer {
+  --post-action: #475569; /* slate-600 */
+}
+
+/* Text + icons */
+html:not(.dark) article.soft-card footer button,
+html:not(.dark) article.soft-card footer a,
+html:not(.dark) article.soft-card footer form button {
+  color: var(--post-action);
+}
+
+html:not(.dark) article.soft-card footer svg {
+  color: var(--post-action);    /* uses currentColor via fill */
+  opacity: .95;                 /* ensure no washed-out icons */
+}
+
+/* Keep your existing hover colors working */
+html:not(.dark) article.soft-card footer button:hover {
+  opacity: 1;
+}
+
+/* Slightly darker divider so the row separates from content */
+html:not(.dark) article.soft-card footer {
+  border-top-color: #e2e8f0;    /* slate-200 */
+}
+/* =========================================
+   MODAL HARDENING (no translucency)
+   ========================================= */
+
+/* Stronger backdrop in both themes */
+#postModal > .fixed.inset-0 { background: rgba(15,23,42,.45); }        /* light */
+html.dark #postModal > .fixed.inset-0 { background: rgba(2,6,23,.65); }/* dark */
+
+/* Opaque panel */
+#postModal .modal-panel{
+  background:#ffffff !important;
+  border:1px solid #e2e8f0;
+}
+html.dark #postModal .modal-panel{
+  background:#0b1220 !important;        /* deep neutral */
+  border-color:#1f2937;                  /* slate-800-ish */
+}
+
+/* Opaque header/footer (override 'glass') */
+#postModal .modal-header,
+#postModal .modal-footer{
+  background:#ffffff !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+html.dark #postModal .modal-header,
+html.dark #postModal .modal-footer{
+  background:#0b1220 !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  border-color:#1f2937 !important;
+}
+
+/* Input inside modal: ensure legible contrast */
+#postModal .input{
+  color:#0f172a;
+  background:#fff;
+  border-color:#e2e8f0;
+}
+html.dark #postModal .input{
+  color:#e5e7eb;
+  background:#0f172a;   /* slightly lighter than panel to stand out */
+  border-color:#334155;
+}
+
+
+/* ---------- LIGHT MODE CLARITY FIXES ---------- */
+html:not(.dark) .glassy{
+  background:#ffffff !important;                  /* solid surface */
+  border:1px solid #e5e7eb !important;            /* slate-300 */
+  box-shadow:
+    0 14px 40px -20px rgba(2,6,23,.20),
+    0 2px 8px -4px rgba(2,6,23,.12);
+}
+
+/* Header: a touch stronger and clearer text */
+html:not(.dark) .card-header{ 
+  background:linear-gradient(135deg,#eff6ff 0%, #dbeafe 100%) !important;
+}
+html:not(.dark) .card-header .text-blue-700{
+  color:#1e3a8a !important;                       /* blue-900 */
+}
+
+/* Labels & helper text */
+html:not(.dark) label{ color:#334155 !important; }/* slate-700 */
+html:not(.dark) .text-slate-400{ color:#64748b !important; } /* slate-500 */
+
+/* Inputs: force bright background & high-contrast text */
+html:not(.dark) input{
+  background:#ffffff !important;
+  color:#0f172a !important;                       /* slate-900 */
+  border-color:#cbd5e1 !important;                /* slate-300 */
+}
+html:not(.dark) input:focus{
+  border-color:#60a5fa !important;                /* blue-400 */
+  box-shadow:0 0 0 3px rgba(59,130,246,.18) !important;
+}
+
+/* Autofill can darken fields; make it bright in light mode */
+html:not(.dark) input:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color:#0f172a !important;
+  caret-color:#0f172a !important;
+}
+
+/* Icons inside inputs */
+.form-icon{ color:#64748b !important; opacity:1; } /* slate-500 */
+
+/* CTA button: a bit more depth */
+html:not(.dark) #submitBtn{
+  box-shadow:
+    0 12px 28px -12px rgba(59,130,246,.35),
+    0 6px 14px -8px rgba(2,6,23,.18);
+}
+
+/* ---------------- Toggle button: light & dark ---------------- */
+#themeToggle{ font-weight:600; border-width:1px; }
+html:not(.dark) #themeToggle{
+  background:#ffffff;                /* crisp on light */
+  border-color:#cbd5e1;              /* slate-300 */
+  color:#334155;                     /* slate-700 */
+  box-shadow:0 6px 16px -10px rgba(2,6,23,.25), 0 2px 6px -4px rgba(2,6,23,.12);
+}
+html:not(.dark) #themeToggle:hover{ background:#f8fafc; border-color:#94a3b8; }
+html:not(.dark) #themeToggle:focus{ outline:0; box-shadow:0 0 0 3px rgba(59,130,246,.25); }
+
+html.dark #themeToggle{
+  background:#1f2937;                /* slate-800 */
+  border-color:#374151;              /* slate-700 */
+  color:#e5e7eb;                     /* slate-200 */
+}
+html.dark #themeToggle:hover{ background:#111827; }
+
+/* Optional: header hook you already use */
+.card-header{ border-bottom:1px solid rgba(226,232,240,.8); }
+html.dark .card-header{ border-bottom-color:#1f2937; }
+
+/* ---------------- Alerts (flash messages) ---------------- */
+.alert{
+  display:flex; align-items:center; gap:.5rem;
+  padding:.75rem 1rem; border-radius:12px; border:1px solid transparent;
+  font-weight:600; margin-bottom:1rem;
+}
+.alert .alert-icon{ width:18px; height:18px; opacity:.9; }
+
+/* success / info */
+html:not(.dark) .alert-success{
+  background:#ecfdf5;                /* emerald-50 */
+  color:#065f46;                     /* emerald-800 */
+  border-color:#a7f3d0;              /* emerald-200 */
+}
+html.dark .alert-success{
+  background:#064e3b;                /* emerald-900 */
+  color:#d1fae5;                     /* emerald-100 */
+  border-color:#065f46;
+}
+
+/* error */
+html:not(.dark) .alert-error{
+  background:#fef2f2;                /* rose-50 */
+  color:#991b1b;                     /* red-800 */
+  border-color:#fecaca;              /* red-200 */
+}
+html.dark .alert-error{
+  background:#7f1d1d;                /* red-900 */
+  color:#fee2e2;                     /* red-100 */
+  border-color:#b91c1c;              /* red-700 */
+}
