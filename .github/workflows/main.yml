@@ -85,7 +85,7 @@ jobs:
             echo "has_larastan=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Ensure phpstan.neon (written via printf, no heredoc)
+      - name: Ensure phpstan.neon (printf; no heredoc; no memoryLimit key)
         shell: bash
         run: |
           if [ ! -f phpstan.neon ] && [ ! -f phpstan.neon.dist ]; then
@@ -97,16 +97,14 @@ jobs:
               "  paths:" \
               "    - app" \
               "  level: 6" \
-              "  checkMissingIterableValueType: true" \
-              "  memoryLimit: 1G" > phpstan.neon
+              "  checkMissingIterableValueType: true" > phpstan.neon
             else
               printf "%s\n" \
               "parameters:" \
               "  paths:" \
               "    - app" \
               "  level: 5" \
-              "  checkMissingIterableValueType: true" \
-              "  memoryLimit: 1G" > phpstan.neon
+              "  checkMissingIterableValueType: true" > phpstan.neon
             fi
           fi
 
