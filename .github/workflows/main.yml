@@ -194,9 +194,9 @@ jobs:
         if: hashFiles('package.json') != ''
         run: npm audit --omit=dev || true
 
-  # ----- Auto version bump & tag on push to main (after CI passes) -----
+  # ----- Auto version bump, tag, and RELEASE on push to main (after CI passes) -----
   version_bump:
-    name: Bump Version • Tag
+    name: Bump Version • Tag • Release
     runs-on: ubuntu-latest
     needs: [test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -253,3 +253,15 @@ jobs:
             git tag -a "v${{ steps.bump.outputs.new_version }}" -m "Version ${{ steps.bump.outputs.new_version }}"
             git push --follow-tags
           fi
+
+      - name: Create GitHub Release
+        # Will create a release for tag vX.YY.ZZZ (idempotent; will no-op if it exists)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.bump.outputs.new_version }}
+          name: v${{ steps.bump.outputs.new_version }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
