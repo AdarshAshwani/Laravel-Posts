@@ -156,7 +156,7 @@
                 <label class="block text-sm font-semibold mb-1">Upload Image</label>
                 <div id="pmDrop"
                     class="uploader rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900/40 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition">
-                    <input id="pmFile" type="file" name="media[]" accept="image/*" class="hidden">
+                    <input id="pmFile" type="file" name="media[]" accept=".jpg,.jpeg,.png" class="hidden">
                     <div class="flex items-center justify-center gap-2">📁 <span>Click or drop one image</span></div>
                 </div>
                 <div id="pmPreview" class="mt-3"></div>
@@ -452,6 +452,24 @@ document.querySelectorAll('.open-edit').forEach(btn => {
         openModal();
     });
 });
+
+function setSingle(file) {
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    const extAllowed = /\.(jpe?g|png)$/i.test(file.name);
+
+    if (!allowedTypes.includes(file.type) || !extAllowed) {
+        showToast('Only JPG, JPEG, and PNG images are allowed');
+        pmFile.value = ''; // clear file
+        pmPreview.innerHTML = '';
+        return;
+    }
+
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    pmFile.files = dt.files;
+    pmPreview.innerHTML = `<img src="${URL.createObjectURL(file)}" class="w-full h-40 object-cover rounded-xl mt-2">`;
+    pmRemoveMedia.value = '0';
+}
 
 // ===== Guard: media required rules
 pmForm?.addEventListener('submit', (e) => {
