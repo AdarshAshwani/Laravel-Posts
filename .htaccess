@@ -1,15 +1,23 @@
+# public_html/dailylogs/.htaccess
 <IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
+    Options -MultiViews -Indexes
+    RewriteEngine On
+    RewriteBase /dailylogs/
 
-  # if it's already /public, skip
-  RewriteRule ^public/ - [L]
+    # Serve files that actually exist
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
-  # serve real files/dirs from /public
-  RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
-  RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
-  RewriteRule ^(.*)$ public/$1 [L]
+    # Map common public assets without exposing /public
+    RewriteRule ^(favicon\.ico|robots\.txt)$ public/$1 [L,NC]
+    RewriteRule ^(build|assets|css|js|images|img|fonts|vendor|storage)/(.*)$ public/$1/$2 [L,NC]
 
-  # send everything else to Laravel
-  RewriteRule ^.*$ public/index.php [L]
+    # Everything else -> our local index.php (shim)
+    RewriteRule ^ index.php [L]
 </IfModule>
+
+# Block sensitive files if guessed directly
+<FilesMatch "^(\.env|artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|webpack\.mix\.js|vite\.config\.js|server\.php)$">
+  Require all denied
+</FilesMatch>
