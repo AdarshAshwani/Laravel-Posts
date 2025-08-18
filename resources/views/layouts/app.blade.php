@@ -38,7 +38,7 @@
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 12l9-9 9 9-1.5 1.5L12 5l-7.5 8.5L3 12zm2 8v-6h5v6H5zm7 0v-9h5v9h-5z"/></svg>
             <span class="font-semibold">Dashboard</span>
           </a>
-          <a href="/" class="nav-item"> <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg> Public Posts</a>
+          <a href="{{ route('posts.public') }}" class="nav-item"> <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg> Public Posts</a>
         </nav>
 
         <div class="mt-auto p-4 border-t border-slate-200/70 dark:border-slate-800/70">
