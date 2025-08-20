@@ -23,12 +23,21 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        // Keep username short & URL-safe in case you slug it elsewhere
+        $username = Str::lower(Str::slug($this->faker->unique()->userName()));
+        $username = substr($username, 0, 30) ?: Str::lower(Str::random(8));
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name'              => $this->faker->name(),
+            'username'          => $username,               // <-- important
+            'email'             => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'password'          => bcrypt('password'),      // test-only
+            'remember_token'    => Str::random(10),
+
+            // add any other NOT NULL columns you introduced, e.g.:
+            // 'status' => 'active',
+            // 'role'   => 'user',
         ];
     }
 
