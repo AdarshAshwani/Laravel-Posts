@@ -5,8 +5,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany; // ← add this
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class Post extends Model
 {
@@ -17,13 +18,45 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    // ✅ add this relation so ->with(['user','media']) works
+    // relation so ->with(['user','media']) works
     public function media(): HasMany
     {
         return $this->hasMany(PostMedia::class);
     }
 
-    // (rest stays exactly as you have)
+    /**
+     * Scope: search by description and title.
+     * - Tries MySQL FULLTEXT (boolean mode) if available.
+     * - Falls back to LIKE/ILIKE for other drivers or if FULLTEXT index missing.
+     *
+     * Usage:
+     * Post::with(['user','media'])->search($request->query('q'))->latest()->paginate(10);
+     */
+    public function scopeSearch($query, ?string $q)
+    {
+        $q = trim((string) $q);
+        if ($q === '') return $query;
+
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            try {
+                // requires a FULLTEXT index on (title, description)
+                // see migration suggestion earlier
+                return $query->whereFullText(['title', 'description'], $q, ['mode' => 'boolean']);
+            } catch (\Throwable $e) {
+                // continue to fallback below
+            }
+        }
+
+        $op = $driver === 'pgsql' ? 'ilike' : 'like';
+        return $query->where(function ($qb) use ($q, $op) {
+            $qb->where('description', $op, "%{$q}%")
+               ->orWhere('title', $op, "%{$q}%");
+        });
+    }
+
+    // keep your slugging logic as-is
     protected static function booted()
     {
         static::creating(function (Post $post) {

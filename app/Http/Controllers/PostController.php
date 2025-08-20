@@ -7,16 +7,42 @@ use App\Models\PostMedia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PostController extends Controller
 {
     /**
-     * List posts (dashboard feed)
+     * List posts (dashboard feed) with search (?q=)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::with(['user', 'media'])->latest()->paginate(10);
-        return view('posts.index', compact('posts'));
+        $q = trim((string) $request->query('q', ''));
+
+        $posts = Post::with(['user', 'media'])
+            ->when($q !== '', function ($builder) use ($q) {
+                $driver = DB::getDriverName();
+
+                if ($driver === 'mysql') {
+                    // Try FULLTEXT (requires optional migration below)
+                    try {
+                        $builder->whereFullText(['title', 'description'], $q, ['mode' => 'boolean']);
+                        return;
+                    } catch (\Throwable $e) {
+                        // fall through to LIKE
+                    }
+                }
+
+                $op = $driver === 'pgsql' ? 'ilike' : 'like';
+                $builder->where(function ($qb) use ($q, $op) {
+                    $qb->where('description', $op, "%{$q}%")
+                       ->orWhere('title', $op, "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->appends(['q' => $q]);
+
+        return view('posts.index', compact('posts', 'q'));
     }
 
     /**
@@ -35,25 +61,33 @@ class PostController extends Controller
 
         // exclusivity
         if ($hasImage && $hasUrl) {
-            return back()->withErrors(['media_url' => 'Choose either an image OR a video URL, not both.'])
-                         ->withInput();
+            return back()
+                ->withErrors(['media_url' => 'Choose either an image OR a video URL, not both.'])
+                ->withInput();
         }
         if (!$hasImage && !$hasUrl) {
-            return back()->withErrors(['media' => 'Please add an image or a video URL.'])
-                         ->withInput();
+            return back()
+                ->withErrors(['media' => 'Please add an image or a video URL.'])
+                ->withInput();
         }
         if ($hasImage && count($request->file('media', [])) > 1) {
-            return back()->withErrors(['media' => 'Please upload only one image.'])
-                         ->withInput();
+            return back()
+                ->withErrors(['media' => 'Please upload only one image.'])
+                ->withInput();
         }
 
-        // auto title
+        // auto title (trim spaces, strip tags, normalize whitespace)
         $rawDesc   = (string) ($data['description'] ?? '');
         $autoTitle = trim(preg_replace('/\s+/', ' ', strip_tags($rawDesc)));
+
         if ($autoTitle === '') {
             $autoTitle = $hasImage ? 'Image post' : 'Video post';
         }
-        $autoTitle = Str::limit($autoTitle, 255, '');
+
+        // hard cap title length ~80 chars
+        if (Str::length($autoTitle) > 80) {
+            $autoTitle = Str::limit($autoTitle, 80, '');
+        }
 
         // create post
         $post = Post::create([
@@ -69,18 +103,18 @@ class PostController extends Controller
 
             PostMedia::create([
                 'post_id'     => $post->id,
-                'file_path'   => $path,        // local file
-                'youtube_url' => null,         // no YouTube URL
-                'media_type'  => 'image',      // image
+                'file_path'   => $path,
+                'youtube_url' => null,
+                'media_type'  => 'image',
             ]);
         } elseif ($hasUrl) {
             $url = $request->input('media_url');
 
             PostMedia::create([
                 'post_id'     => $post->id,
-                'file_path'   => null,         // no local file
-                'youtube_url' => $url,         // store the URL here
-                'media_type'  => 'video',      // still "video"
+                'file_path'   => null,
+                'youtube_url' => $url,
+                'media_type'  => 'video',
             ]);
         }
 
@@ -189,19 +223,43 @@ class PostController extends Controller
 
         foreach ($post->media as $m) {
             // delete physical file only if a local file exists
-            if ($m->file_path && Storage::disk('public')->exists($m->file_path)) {
-                Storage::disk('public')->delete($m->file_path);
+            if ($m->file_path && \Storage::disk('public')->exists($m->file_path)) {
+                \Storage::disk('public')->delete($m->file_path);
             }
             $m->delete();
         }
     }
 
     /**
-     * Public index (10 per page)
+     * Public index (10 per page) with search (?q=)
      */
-    public function publicIndex()
+    public function publicIndex(Request $request)
     {
-        $posts = Post::with(['user','media'])->latest()->paginate(10);
-        return view('posts.public', compact('posts'));
+        $q = trim((string) $request->query('q', ''));
+
+        $posts = Post::with(['user','media'])
+            ->when($q !== '', function ($builder) use ($q) {
+                $driver = DB::getDriverName();
+
+                if ($driver === 'mysql') {
+                    try {
+                        $builder->whereFullText(['title', 'description'], $q, ['mode' => 'boolean']);
+                        return;
+                    } catch (\Throwable $e) {
+                        // fall through
+                    }
+                }
+
+                $op = $driver === 'pgsql' ? 'ilike' : 'like';
+                $builder->where(function ($qb) use ($q, $op) {
+                    $qb->where('description', $op, "%{$q}%")
+                       ->orWhere('title', $op, "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->appends(['q' => $q]);
+
+        return view('posts.public', compact('posts', 'q'));
     }
 }

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title','Posts')
-@section('page_title','Community Feed')
+@section('page_title','Daily Feed')
 
 @section('page_actions')
   <a href="{{ route('posts.index') }}" class="inline-flex items-center px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700">

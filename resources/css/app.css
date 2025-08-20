@@ -128,7 +128,6 @@ html.dark .toast{
   color: #e5e7eb;             /* slate-200 */
 }
 
-
 /* Media-required error highlight (works in light & dark) */
 .input.is-invalid{ border-color:#ef4444 !important; box-shadow:0 0 0 2px rgba(239,68,68,.25) !important; }
 .uploader.is-invalid{ border-color:#ef4444 !important; background-color:rgba(239,68,68,.05) !important; }
@@ -256,36 +255,28 @@ html:not(.dark) nav[role="navigation"] .relative.inline-flex.items-center{
   background: #fff;
   border: 1px solid rgb(226 232 240);
 }
+
 /* =========================================
    LIGHT MODE CONTRAST TWEAKS (feed + cards)
    ========================================= */
-
-/* Make cards a bit darker than pure white so they stand off the page */
 html:not(.dark) article.soft-card,
 html:not(.dark) .soft-card.feed-card {
-  /* soft neutral surface (between white and slate-50) */
-  background: #f7f9fc;                   /* slightly darker than #fff */
-  border-color: #e2e8f0;                 /* slate-200 */
+  background: #f7f9fc;
+  border-color: #e2e8f0;
   box-shadow:
     0 1px 2px rgba(2,6,23,.05),
     0 8px 24px -18px rgba(2,6,23,.22);
 }
-
-/* If you also want the composer to match the card tone */
 html:not(.dark) .composer-launch{
   background: #f7f9fc;
   border-color: #e2e8f0;
 }
-
-/* Strengthen body copy inside cards */
 html:not(.dark) article.soft-card p,
 html:not(.dark) article.soft-card li,
 html:not(.dark) article.soft-card blockquote {
-  color: #334155;                        /* slate-700 */
+  color: #334155; /* slate-700 */
   line-height: 1.75;
 }
-
-/* Headings & strong text inside cards */
 html:not(.dark) article.soft-card h1,
 html:not(.dark) article.soft-card h2,
 html:not(.dark) article.soft-card h3,
@@ -293,95 +284,68 @@ html:not(.dark) article.soft-card h4,
 html:not(.dark) article.soft-card h5,
 html:not(.dark) article.soft-card h6,
 html:not(.dark) article.soft-card strong {
-  color: #0f172a;                        /* slate-900 */
+  color: #0f172a; /* slate-900 */
 }
-
-/* Muted metadata (timestamps, separators) */
 html:not(.dark) article.soft-card .text-slate-400,
 html:not(.dark) article.soft-card .text-slate-500,
 html:not(.dark) article.soft-card time {
-  color: #64748b !important;             /* slate-500 */
+  color: #64748b !important; /* slate-500 */
 }
-
-/* Inputs: ensure legible text/placeholder on white */
 html:not(.dark) .input{
-  color: #0f172a;                         /* slate-900 */
+  color: #0f172a;
   background: #ffffff;
   border-color: #e2e8f0;
 }
 html:not(.dark) .input::placeholder{
-  color: #94a3b8;                        /* slate-400 */
+  color: #94a3b8;
+}
+html:not(.dark) .display-title{
+  background-image: linear-gradient(90deg, #0f172a, #1f2937);
 }
 
-/* Optional: lift the header title contrast a touch */
-html:not(.dark) .display-title{
-  background-image: linear-gradient(90deg, #0f172a, #1f2937); /* slate-900 → gray-800 */
-}
 /* =========================================
    LIGHT MODE — SIDEBAR / TOPBAR / USER MENU
    ========================================= */
-
-/* Sidebar shell */
 html:not(.dark) #sidebar{
   background:#ffffff;
-  border-right:1px solid #e2e8f0;                 /* slate-200 */
+  border-right:1px solid #e2e8f0;
   box-shadow: 0 10px 30px -24px rgba(2,6,23,.18);
 }
-
-/* Sidebar links */
-html:not(.dark) #sidebar .nav-item{ color:#0f172a; }      /* slate-900 */
+html:not(.dark) #sidebar .nav-item{ color:#0f172a; }
 html:not(.dark) #sidebar .nav-item svg{ opacity:.7; }
-html:not(.dark) #sidebar .nav-item:hover{ background:#f8fafc; }  /* slate-50 */
-
-/* Active link pill */
+html:not(.dark) #sidebar .nav-item:hover{ background:#f8fafc; }
 html:not(.dark) #sidebar .nav-item-active{
   background: linear-gradient(180deg, rgba(59,130,246,.10), rgba(59,130,246,.06));
   border:1px solid rgba(59,130,246,.28);
-  color:#1d4ed8;  /* blue-700 */
+  color:#1d4ed8;
 }
-
-/* Sidebar footer strip (where Toggle/Logout live) */
 html:not(.dark) #sidebar > .mt-auto{
   background: rgba(255,255,255,.96);
   border-top:1px solid #e2e8f0 !important;
 }
-
-/* Topbar glass + divider */
 html:not(.dark) header.glass{
   background: rgba(255,255,255,.92);
   border-bottom:1px solid #e2e8f0;
   -webkit-backdrop-filter: saturate(160%) blur(14px);
   backdrop-filter: saturate(160%) blur(14px);
 }
-
-/* Topbar left subtle text (“Community Feed” breadcrumb area) */
-html:not(.dark) header.glass .text-slate-500{ color:#475569 !important; } /* slate-600ish */
-
-/* Topbar search */
+html:not(.dark) header.glass .text-slate-500{ color:#475569 !important; }
 html:not(.dark) header.glass .input{
   background:#ffffff;
   border-color:#e2e8f0;
   color:#0f172a;
 }
-html:not(.dark) header.glass .input::placeholder{ color:#94a3b8; } /* slate-400 */
-
-/* User menu dropdown (Profile/Settings/Logout) */
+html:not(.dark) header.glass .input::placeholder{ color:#94a3b8; }
 html:not(.dark) #user-menu{
   background:#ffffff !important;
   border:1px solid #e2e8f0 !important;
   box-shadow: 0 16px 40px -24px rgba(2,6,23,.35);
 }
-html:not(.dark) #user-menu a{
-  color:#0f172a;
-}
-html:not(.dark) #user-menu a:hover{
-  background:#f8fafc; /* slate-50 */
-}
+html:not(.dark) #user-menu a{ color:#0f172a; }
+html:not(.dark) #user-menu a:hover{ background:#f8fafc; }
 html:not(.dark) #user-menu .border-t{ border-color:#e2e8f0 !important; }
-html:not(.dark) #user-menu button{ color:#dc2626; }                  /* Logout */
+html:not(.dark) #user-menu button{ color:#dc2626; }
 html:not(.dark) #user-menu button:hover{ background:rgba(220,38,38,.06); }
-
-/* Cards + composer: slightly tinted so they stand off the page */
 html:not(.dark) article.soft-card,
 html:not(.dark) .composer-launch{
   background:#f7f9fc;
@@ -390,66 +354,40 @@ html:not(.dark) .composer-launch{
     0 1px 2px rgba(2,6,23,.05),
     0 8px 24px -18px rgba(2,6,23,.20);
 }
-
-/* Post text contrast */
 html:not(.dark) article.soft-card p,
-html:not(.dark) article.soft-card li{ color:#334155; line-height:1.75; } /* slate-700 */
+html:not(.dark) article.soft-card li{ color:#334155; line-height:1.75; }
 html:not(.dark) article.soft-card h1,
 html:not(.dark) article.soft-card h2,
 html:not(.dark) article.soft-card h3,
-html:not(.dark) article.soft-card strong{ color:#0f172a; }               /* slate-900 */
+html:not(.dark) article.soft-card strong{ color:#0f172a; }
 html:not(.dark) article.soft-card .text-slate-500,
-html:not(.dark) article.soft-card time{ color:#64748b !important; }      /* slate-500 */
+html:not(.dark) article.soft-card time{ color:#64748b !important; }
 
 /* =========================================
    LIGHT MODE — POST ACTIONS (Edit / Delete / Share)
    ========================================= */
-
-/* Stronger default color for actions */
-html:not(.dark) article.soft-card footer {
-  --post-action: #475569; /* slate-600 */
-}
-
-/* Text + icons */
+html:not(.dark) article.soft-card footer { --post-action: #475569; }
 html:not(.dark) article.soft-card footer button,
 html:not(.dark) article.soft-card footer a,
-html:not(.dark) article.soft-card footer form button {
-  color: var(--post-action);
-}
+html:not(.dark) article.soft-card footer form button { color: var(--post-action); }
+html:not(.dark) article.soft-card footer svg { color: var(--post-action); opacity: .95; }
+html:not(.dark) article.soft-card footer button:hover { opacity: 1; }
+html:not(.dark) article.soft-card footer { border-top-color: #e2e8f0; }
 
-html:not(.dark) article.soft-card footer svg {
-  color: var(--post-action);    /* uses currentColor via fill */
-  opacity: .95;                 /* ensure no washed-out icons */
-}
-
-/* Keep your existing hover colors working */
-html:not(.dark) article.soft-card footer button:hover {
-  opacity: 1;
-}
-
-/* Slightly darker divider so the row separates from content */
-html:not(.dark) article.soft-card footer {
-  border-top-color: #e2e8f0;    /* slate-200 */
-}
 /* =========================================
-   MODAL HARDENING (no translucency)
+   MODAL HARDENING (no translucency) — POST COMPOSER
    ========================================= */
+#postModal > .fixed.inset-0 { background: rgba(15,23,42,.45); }
+html.dark #postModal > .fixed.inset-0 { background: rgba(2,6,23,.65); }
 
-/* Stronger backdrop in both themes */
-#postModal > .fixed.inset-0 { background: rgba(15,23,42,.45); }        /* light */
-html.dark #postModal > .fixed.inset-0 { background: rgba(2,6,23,.65); }/* dark */
-
-/* Opaque panel */
 #postModal .modal-panel{
   background:#ffffff !important;
   border:1px solid #e2e8f0;
 }
 html.dark #postModal .modal-panel{
-  background:#0b1220 !important;        /* deep neutral */
-  border-color:#1f2937;                  /* slate-800-ish */
+  background:#0b1220 !important;
+  border-color:#1f2937;
 }
-
-/* Opaque header/footer (override 'glass') */
 #postModal .modal-header,
 #postModal .modal-footer{
   background:#ffffff !important;
@@ -463,8 +401,6 @@ html.dark #postModal .modal-footer{
   backdrop-filter:none !important;
   border-color:#1f2937 !important;
 }
-
-/* Input inside modal: ensure legible contrast */
 #postModal .input{
   color:#0f172a;
   background:#fff;
@@ -472,110 +408,364 @@ html.dark #postModal .modal-footer{
 }
 html.dark #postModal .input{
   color:#e5e7eb;
-  background:#0f172a;   /* slightly lighter than panel to stand out */
+  background:#0f172a;
   border-color:#334155;
 }
 
-
 /* ---------- LIGHT MODE CLARITY FIXES ---------- */
 html:not(.dark) .glassy{
-  background:#ffffff !important;                  /* solid surface */
-  border:1px solid #e5e7eb !important;            /* slate-300 */
+  background:#ffffff !important;
+  border:1px solid #e5e7eb !important;
   box-shadow:
     0 14px 40px -20px rgba(2,6,23,.20),
     0 2px 8px -4px rgba(2,6,23,.12);
 }
-
-/* Header: a touch stronger and clearer text */
 html:not(.dark) .card-header{ 
   background:linear-gradient(135deg,#eff6ff 0%, #dbeafe 100%) !important;
 }
-html:not(.dark) .card-header .text-blue-700{
-  color:#1e3a8a !important;                       /* blue-900 */
-}
-
-/* Labels & helper text */
-html:not(.dark) label{ color:#334155 !important; }/* slate-700 */
-html:not(.dark) .text-slate-400{ color:#64748b !important; } /* slate-500 */
-
-/* Inputs: force bright background & high-contrast text */
+html:not(.dark) .card-header .text-blue-700{ color:#1e3a8a !important; }
+html:not(.dark) label{ color:#334155 !important; }
+html:not(.dark) .text-slate-400{ color:#64748b !important; }
 html:not(.dark) input{
   background:#ffffff !important;
-  color:#0f172a !important;                       /* slate-900 */
-  border-color:#cbd5e1 !important;                /* slate-300 */
+  color:#0f172a !important;
+  border-color:#cbd5e1 !important;
 }
 html:not(.dark) input:focus{
-  border-color:#60a5fa !important;                /* blue-400 */
+  border-color:#60a5fa !important;
   box-shadow:0 0 0 3px rgba(59,130,246,.18) !important;
 }
-
-/* Autofill can darken fields; make it bright in light mode */
 html:not(.dark) input:-webkit-autofill{
   -webkit-box-shadow:0 0 0 1000px #ffffff inset !important;
   -webkit-text-fill-color:#0f172a !important;
   caret-color:#0f172a !important;
 }
-
-/* Icons inside inputs */
-.form-icon{ color:#64748b !important; opacity:1; } /* slate-500 */
-
-/* CTA button: a bit more depth */
+.form-icon{ color:#64748b !important; opacity:1; }
 html:not(.dark) #submitBtn{
   box-shadow:
     0 12px 28px -12px rgba(59,130,246,.35),
     0 6px 14px -8px rgba(2,6,23,.18);
 }
 
-/* ---------------- Toggle button: light & dark ---------------- */
+/* Toggle button */
 #themeToggle{ font-weight:600; border-width:1px; }
 html:not(.dark) #themeToggle{
-  background:#ffffff;                /* crisp on light */
-  border-color:#cbd5e1;              /* slate-300 */
-  color:#334155;                     /* slate-700 */
+  background:#ffffff;
+  border-color:#cbd5e1;
+  color:#334155;
   box-shadow:0 6px 16px -10px rgba(2,6,23,.25), 0 2px 6px -4px rgba(2,6,23,.12);
 }
 html:not(.dark) #themeToggle:hover{ background:#f8fafc; border-color:#94a3b8; }
 html:not(.dark) #themeToggle:focus{ outline:0; box-shadow:0 0 0 3px rgba(59,130,246,.25); }
-
 html.dark #themeToggle{
-  background:#1f2937;                /* slate-800 */
-  border-color:#374151;              /* slate-700 */
-  color:#e5e7eb;                     /* slate-200 */
+  background:#1f2937;
+  border-color:#374151;
+  color:#e5e7eb;
 }
 html.dark #themeToggle:hover{ background:#111827; }
 
-/* Optional: header hook you already use */
 .card-header{ border-bottom:1px solid rgba(226,232,240,.8); }
 html.dark .card-header{ border-bottom-color:#1f2937; }
 
-/* ---------------- Alerts (flash messages) ---------------- */
+/* Alerts */
 .alert{
   display:flex; align-items:center; gap:.5rem;
   padding:.75rem 1rem; border-radius:12px; border:1px solid transparent;
   font-weight:600; margin-bottom:1rem;
 }
 .alert .alert-icon{ width:18px; height:18px; opacity:.9; }
-
-/* success / info */
 html:not(.dark) .alert-success{
-  background:#ecfdf5;                /* emerald-50 */
-  color:#065f46;                     /* emerald-800 */
-  border-color:#a7f3d0;              /* emerald-200 */
+  background:#ecfdf5; color:#065f46; border-color:#a7f3d0;
 }
 html.dark .alert-success{
-  background:#064e3b;                /* emerald-900 */
-  color:#d1fae5;                     /* emerald-100 */
-  border-color:#065f46;
+  background:#064e3b; color:#d1fae5; border-color:#065f46;
 }
-
-/* error */
 html:not(.dark) .alert-error{
-  background:#fef2f2;                /* rose-50 */
-  color:#991b1b;                     /* red-800 */
-  border-color:#fecaca;              /* red-200 */
+  background:#fef2f2; color:#991b1b; border-color:#fecaca;
 }
 html.dark .alert-error{
-  background:#7f1d1d;                /* red-900 */
-  color:#fee2e2;                     /* red-100 */
-  border-color:#b91c1c;              /* red-700 */
+  background:#7f1d1d; color:#fee2e2; border-color:#b91c1c;
+}
+
+/* =========================================================
+   ✅ FIXES ADDED BELOW
+   ========================================================= */
+
+/* 1) GLOBAL modal hardening for your Profile modals (class="modal") */
+.modal .modal__backdrop{ background: rgba(15,23,42,.45) !important; }
+html.dark .modal .modal__backdrop{ background: rgba(2,6,23,.65) !important; }
+
+.modal .modal__panel{
+  background:#ffffff !important;
+  border:1px solid #e2e8f0 !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+html.dark .modal .modal__panel{
+  background:#0b1220 !important;
+  border-color:#1f2937 !important;
+}
+
+.modal .modal__header,
+.modal .modal__footer{
+  background:#ffffff !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  border-color:#e2e8f0 !important;
+}
+html.dark .modal .modal__header,
+html.dark .modal .modal__footer{
+  background:#0b1220 !important;
+  border-color:#1f2937 !important;
+}
+
+/* Inputs inside profile modals: legible in both themes */
+.modal .input{
+  color:#0f172a;
+  background:#ffffff;
+  border-color:#e2e8f0;
+}
+html.dark .modal .input{
+  color:#e5e7eb;
+  background:#0f172a;
+  border-color:#334155;
+}
+
+/* 2) High-contrast description text inside cards (light = black, dark = white) */
+article.soft-card .post-desc{ color:#0f172a; }             /* light */
+html.dark article.soft-card .post-desc{ color:#ffffff; }   /* dark */
+article.soft-card .post-desc a{ color:inherit; text-decoration: underline; }
+
+/* === Social grid & pills === */
+.social-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+  gap: .9rem;
+}
+.social-pill{
+  position:relative;
+  width:56px; height:56px; border-radius:9999px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--pill-border, rgba(226,232,240,.75));
+  background: var(--pill-bg, rgba(241,245,249,.7));          /* slate-100-ish */
+  box-shadow: 0 2px 8px rgba(2,6,23,.06);
+  transition: transform .17s ease, box-shadow .17s ease, background .2s ease, border-color .2s ease;
+  overflow:hidden;
+}
+html.dark .social-pill{
+  --pill-border: rgba(30,41,59,.6);                          /* slate-800-ish */
+  --pill-bg: rgba(15,23,42,.5);                              /* slate-900-ish */
+  box-shadow: 0 6px 24px -18px rgba(0,0,0,.5);
+}
+.social-pill .icon{
+  width:24px; height:24px; fill: #60a5fa;                    /* sky-400 for empty */
+  opacity:.9; transition: transform .17s ease, filter .2s ease, opacity .2s ease, fill .2s ease;
+}
+
+/* Active (has a link) */
+.social-pill.is-active{
+  background:
+    radial-gradient(120% 120% at 50% 0, color-mix(in oklab, var(--brand-start), white 15%), transparent 60%),
+    linear-gradient(135deg, var(--brand-start), var(--brand-end));
+  border-color: color-mix(in oklab, var(--brand-end), black 14%);
+  box-shadow:
+    0 12px 36px -18px color-mix(in oklab, var(--brand-end), transparent 65%),
+    0 2px 10px color-mix(in oklab, var(--brand-start), transparent 70%);
+}
+.social-pill.is-active .icon{
+  fill: #fff;
+  filter: drop-shadow(0 2px 10px color-mix(in oklab, var(--brand-start), transparent 70%));
+}
+.social-pill.is-active:hover{
+  transform: translateY(-2px) scale(1.03);
+  box-shadow:
+    0 18px 42px -18px color-mix(in oklab, var(--brand-end), transparent 55%),
+    0 3px 12px color-mix(in oklab, var(--brand-start), transparent 60%);
+}
+
+/* Empty (no link yet) */
+.social-pill.is-empty{
+  background: linear-gradient(180deg, rgba(148,163,184,.16), rgba(148,163,184,.10)); /* slate-400 tints */
+  border-style: dashed;
+}
+html.dark .social-pill.is-empty{
+  background: linear-gradient(180deg, rgba(30,41,59,.55), rgba(15,23,42,.55));
+}
+.social-pill.is-empty .icon{ opacity:.75; }
+.social-pill.is-empty:hover{
+  transform: translateY(-1px);
+  border-color: rgba(59,130,246,.45);                         /* blue-500 */
+  box-shadow: 0 10px 26px -18px rgba(59,130,246,.45);
+}
+.social-pill.is-empty:hover .icon{
+  fill:#3b82f6;                                              /* blue-500 */
+  opacity:1;
+}
+
+/* Tooltips (pure CSS, no JS) */
+.social-pill[data-tip]::after{
+  content: attr(data-tip);
+  position:absolute;
+  bottom:-6px; left:50%;
+  transform: translate(-50%, 120%);
+  white-space:nowrap;
+  background: rgba(15,23,42,.95); color:#fff;
+  padding:.35rem .55rem; font-size:.70rem; font-weight:600;
+  border-radius:.55rem;
+  border:1px solid rgba(226,232,240,.28);
+  opacity:0; pointer-events:none;
+  transition: opacity .18s ease, transform .18s ease;
+  box-shadow: 0 10px 24px -12px rgba(2,6,23,.45);
+  z-index:10;
+}
+html.dark .social-pill[data-tip]::after{
+  background: rgba(11,18,32,.96);
+  border-color: rgba(31,41,55,.8);
+}
+.social-pill:hover::after{
+  opacity:1; transform: translate(-50%, 105%);
+}
+
+/* Small screen spacing improvement */
+@media (max-width: 420px){
+  .social-grid{ grid-template-columns: repeat(5, minmax(0,1fr)); }
+}
+
+
+
+.feed-wrap{
+  display:grid;
+  grid-template-columns: 1fr;            /* mobile = 1 col */
+  gap: 1.5rem;
+}
+@media (min-width: 1024px){              /* lg+: 8/4 */
+  .feed-wrap{
+    grid-template-columns: 2fr 1fr;      /* 8 : 4 ratio */
+    align-items:start;
+  }
+}
+
+/* Only the LEFT column scrolls */
+.feed-scroller{                           /* add this to the left column div */
+  overflow: visible;
+}
+@media (min-width:1024px){
+  :root{ --header-h: 84px; }              /* fallback; JS below will set the real height */
+  .feed-scroller{
+    height: calc(100vh - var(--header-h) - 16px);
+    overflow-y: auto;
+    padding-right: 2px;                   /* avoid overlaying scrollbar on content */
+  }
+}
+
+/* Sticky (fixed-feel) right column */
+.sidebar-sticky{
+  position: sticky;
+  top: calc(var(--header-h,84px) + 12px);
+}
+
+/* Sidebar cards (kept from yours) */
+.side-card{
+  border-radius: 1rem;
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(226,232,240,.7);
+  box-shadow: 0 1px 2px rgba(2,6,23,.06), 0 12px 36px -24px rgba(2,6,23,.45);
+}
+html.dark .side-card{
+  background: rgba(15,23,42,.72);
+  border-color: rgba(30,41,59,.7);
+}
+
+/* Social grid (unchanged) */
+.social-grid{ display:grid; grid-template-columns: repeat(5,1fr); gap:.75rem; }
+@media (min-width:1280px){ .social-grid{ grid-template-columns: repeat(6,1fr); } }
+
+.social-pill{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:48px; height:48px; border-radius:999px;
+  border:1px solid rgba(148,163,184,.45); background: rgba(241,245,249,.7);
+  transition: transform .15s, box-shadow .15s, background .15s, border-color .15s;
+}
+html.dark .social-pill{ background: rgba(2,6,23,.6); border-color: rgba(51,65,85,.6); }
+.social-pill .icon{ width:22px; height:22px; opacity:.9; fill:#38bdf8; }
+.social-pill:hover{ transform: translateY(-2px); }
+.social-pill.is-active{
+  background: radial-gradient(120px 120px at 30% 20%, color-mix(in oklab, var(--brand-start,#60a5fa), white 10%), transparent),
+              radial-gradient(120px 120px at 70% 80%, color-mix(in oklab, var(--brand-end,#3b82f6), white 8%), transparent);
+  border-color: color-mix(in oklab, var(--brand-start,#60a5fa), #000 12%);
+  box-shadow: 0 10px 26px -18px color-mix(in oklab, var(--brand-end,#3b82f6), #000 35%);
+}
+.social-pill.is-active .icon{ fill:#0ea5e9; }
+.social-pill.is-empty{ opacity:.7; }
+.social-pill.is-empty:hover{ opacity:1; }
+
+.tooltip{ position:relative; }
+.tooltip[data-tip]:hover::after{
+  content: attr(data-tip); position:absolute; bottom:58px; left:50%; transform: translateX(-50%);
+  white-space:nowrap; font-size:12px; font-weight:600; padding:6px 8px; border-radius:8px;
+  background:#0f172a; color:#fff; border:1px solid #e2e8f0; box-shadow:0 10px 30px rgba(2,6,23,.35);
+}
+html.dark .tooltip[data-tip]:hover::after{ background:#0b1220; color:#e5e7eb; border-color:#1f2937; }
+
+/* Stat row */
+.stat{ display:flex; align-items:center; justify-content:space-between;
+  padding:.75rem 1rem; border-radius:.75rem; border:1px solid rgba(226,232,240,.7); }
+html.dark .stat{ border-color: rgba(30,41,59,.7); }
+
+/* --- Powered by Postify card --- */
+.brand-card{
+  position:relative; overflow:hidden; border:1px solid rgba(226,232,240,.7);
+  background: radial-gradient(140% 120% at -10% -20%, rgba(59,130,246,.12), transparent 42%),
+              radial-gradient(120% 120% at 110% 0%, rgba(14,165,233,.10), transparent 44%),
+              rgba(255,255,255,.9);
+}
+html.dark .brand-card{
+  border-color: rgba(30,41,59,.7);
+  background: radial-gradient(140% 120% at -10% -20%, rgba(59,130,246,.18), transparent 42%),
+              radial-gradient(120% 120% at 110% 0%, rgba(14,165,233,.16), transparent 44%),
+              rgba(15,23,42,.72);
+}
+.brand-card::after{
+  content:""; position:absolute; inset:auto -40% -40% auto; width:280px; height:280px;
+  background: radial-gradient(closest-side, rgba(59,130,246,.20), transparent 70%);
+  filter: blur(12px); transform: rotate(12deg);
+}
+.brand-logo{
+  display:grid; place-items:center; width:56px; height:56px; border-radius:16px;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 48%, #06b6d4 100%);
+  box-shadow: 0 12px 36px -18px rgba(37,99,235,.65), inset 0 0 0 1px rgba(255,255,255,.35);
+}
+.brand-logo svg{ width:28px; height:28px; fill:white; opacity:.96 }
+.brand-chip{
+  display:inline-flex; align-items:center; gap:.45rem;
+  padding:.35rem .6rem; border-radius:999px; font-weight:700; font-size:.70rem; letter-spacing:.04em;
+  background: rgba(2,6,23,.06);
+  border:1px solid rgba(148,163,184,.35);
+}
+html.dark .brand-chip{ background: rgba(2,6,23,.4); border-color: rgba(51,65,85,.6); }
+
+.brand-meta{ font-size:.75rem; color:#64748b }
+html.dark .brand-meta{ color:#94a3b8 }  
+
+.social-pill .icon { width: 20px; height: 20px; display: inline-block; }
+.social-pill img.icon { width: 20px; height: 20px; object-fit: contain; }
+
+/* Glyph colors */
+.social-pill.is-active .glyph { color: #ffffff; }   /* white on your gradient */
+.social-pill.is-empty  .glyph { color: #94a3b8; }   /* slate-400 for light mode */
+@media (prefers-color-scheme: dark) {
+  .social-pill.is-empty .glyph { color: #475569; }  /* slate-600 in dark mode */
+}
+
+.header-title{
+  font-weight: 800;          /* same “bold” look */
+  letter-spacing: .01em;
+}
+
+html:not(.dark) header.glass .header-title{
+  color:#0f172a !important;  /* slate-900 on light */
+}
+
+html.dark header.glass .header-title{
+  color:#e5e7eb !important;  /* slate-200 on dark */
 }

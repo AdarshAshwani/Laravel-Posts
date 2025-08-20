@@ -44,7 +44,12 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'social_links' => 'array',
             'password' => 'hashed',
         ];
+    }
+    public function subprofiles()
+    {
+        return $this->hasMany(\App\Models\Subprofile::class);
     }
 }

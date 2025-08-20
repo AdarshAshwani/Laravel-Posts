@@ -42,6 +42,7 @@ class ComposerStaticInit88970a0117c062eed55fa8728fc43833
         'ce9671a430e4846b44e1c68c7611f9f5' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery.php',
         'a1cfe24d14977df6878b9bf804af2d1c' => __DIR__ . '/..' . '/nunomaduro/collision/src/Adapters/Phpunit/Autoload.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
+        '6f63623309b417353d909e0e864f4beb' => __DIR__ . '/../..' . '/app/Support/helpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -540,6 +541,8 @@ class ComposerStaticInit88970a0117c062eed55fa8728fc43833
         'App\\Http\\Controllers\\InstallController' => __DIR__ . '/../..' . '/app/Http/Controllers/InstallController.php',
         'App\\Http\\Controllers\\LoginController' => __DIR__ . '/../..' . '/app/Http/Controllers/LoginController.php',
         'App\\Http\\Controllers\\PostController' => __DIR__ . '/../..' . '/app/Http/Controllers/PostController.php',
+        'App\\Http\\Controllers\\ProfileController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProfileController.php',
+        'App\\Http\\Controllers\\SiteSettingsController' => __DIR__ . '/../..' . '/app/Http/Controllers/SiteSettingsController.php',
         'App\\Http\\Kernel' => __DIR__ . '/../..' . '/app/Http/Kernel.php',
         'App\\Http\\Middleware\\CheckInstallation' => __DIR__ . '/../..' . '/app/Http/Middleware/CheckInstallation.php',
         'App\\Http\\Middleware\\ForceFileSessionForInstall' => __DIR__ . '/../..' . '/app/Http/Middleware/ForceFileSessionForInstall.php',
@@ -547,6 +550,8 @@ class ComposerStaticInit88970a0117c062eed55fa8728fc43833
         'App\\Http\\Middleware\\Middleware' => __DIR__ . '/../..' . '/app/Http/Middleware/Middleware.php',
         'App\\Models\\Post' => __DIR__ . '/../..' . '/app/Models/Post.php',
         'App\\Models\\PostMedia' => __DIR__ . '/../..' . '/app/Models/PostMedia.php',
+        'App\\Models\\Setting' => __DIR__ . '/../..' . '/app/Models/Setting.php',
+        'App\\Models\\Subprofile' => __DIR__ . '/../..' . '/app/Models/Subprofile.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',

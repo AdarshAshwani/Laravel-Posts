@@ -258,7 +258,7 @@
 
         <!-- Footer -->
         <div class="px-5 sm:px-6 md:px-7 pb-6 text-center text-[11px] text-slate-500 dark:text-slate-500">
-            © {{ date('Y') }} Posts
+            © {{ date('Y') }} Powered by Postify
         </div>
     </div>
 

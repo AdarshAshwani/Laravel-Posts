@@ -1,597 +1,229 @@
-{{-- resources/views/posts/show.blade.php --}}
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="utf-8">
-    <title>{{ $post->title ?? 'Post' }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@section('title', $post->title ?? 'Post')
+@section('page_title', 'Post')
 
-    <style>
-    /* ========= THEME TOKENS ========= */
-    :root {
-        /* Light theme */
-        --bg: #f6f8fc;
-        --card: #ffffff;
-        --text: #0f172a;
-        /* slate-900 */
-        --muted: #64748b;
-        /* slate-500 */
-        --brand: #2563eb;
-        /* blue-600 */
-        --border: #e2e8f0;
-        /* slate-200 */
-        --btn: #ffffff;
-        --btnText: #0f172a;
-        --btnHover: #f1f5f9;
-        /* slate-100 */
-        --toast: #0f172a;
-        /* dark toast on light */
-        --toastText: #ffffff;
-        --ring: rgba(37, 99, 235, .25);
-    }
+@section('page_actions')
+  <a href="{{ url()->previous() ?: route('posts.public') }}" class="btn btn-ghost inline-flex items-center gap-2">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
+    Back
+  </a>
+@endsection
 
-    .dark:root {
-        /* Dark theme */
-        --bg: #0b1220;
-        --card: #121a2b;
-        --text: #e6e9f0;
-        --muted: #9aa3b2;
-        --brand: #6b7cff;
-        --border: #1f2a44;
-        --btn: #16223a;
-        --btnText: #e6e9f0;
-        --btnHover: #1b2948;
-        --toast: #1a2338;
-        --toastText: #e9eefb;
-        --ring: #2a3a62;
-    }
+@section('content')
+<div class="max-w-3xl mx-auto space-y-6">
+  <article class="soft-card soft-card-hover spotlight p-5">
+    {{-- Header --}}
+    <header class="flex items-start gap-3">
+      @php $author = $post->user; @endphp
+      @if($author && $author->avatar_path)
+        <img
+          src="{{ asset('storage/'.$author->avatar_path) }}?v={{ optional($author->updated_at)->timestamp }}"
+          alt="{{ $author->username ?? $author->email }} avatar"
+          class="w-10 h-10 rounded-xl object-cover ring-2 ring-white/60 dark:ring-slate-900/60"
+          loading="lazy" decoding="async">
+      @else
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 ring-2 ring-white/60 dark:ring-slate-900/60
+                 flex items-center justify-center text-white text-sm font-semibold">
+          {{ strtoupper(substr($author->username ?? $author->email ?? 'U', 0, 1)) }}
+        </div>
+      @endif
 
-    /* ========= BASE ========= */
-    * {
-        box-sizing: border-box
-    }
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold">{{ $author->username ?? $author->email ?? 'User' }}</h1>
+          <span class="text-xs text-slate-400">•</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400">{{ $post->created_at?->diffForHumans() }}</span>
+        </div>
 
-    html,
-    body {
-        height: 100%
-    }
+        @if($post->description)
+          <div class="mt-2 text-slate-400 dark:text-slate-500 leading-7">
+            <div class="post-desc break-words" data-full='@json($post->description)'></div>
+            <button type="button" class="readmore-btn text-sm font-semibold text-blue-600 hover:underline mt-1 hidden">
+              Read more
+            </button>
+          </div>
+        @endif
+      </div>
+    </header>
 
-    body {
-        margin: 0;
-        color: var(--text);
-        font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-        background:
-            radial-gradient(1000px 500px at 120% 10%, rgba(99, 102, 241, .06), transparent 60%),
-            radial-gradient(1200px 600px at 10% -10%, rgba(59, 130, 246, .06), transparent 60%),
-            var(--bg);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
+    {{-- Media --}}
+    @if($post->media->isNotEmpty())
+      @php
+        $m = $post->media->first();
+        $youtubeUrl = $m->youtube_url ?? null;
+        if (!$youtubeUrl && isset($m->file_path) && preg_match('~^https?://(www\.)?(youtube\.com|youtu\.be)/~i', $m->file_path)) {
+          $youtubeUrl = $m->file_path;
+        }
+        $ytId = null;
+        if ($youtubeUrl && preg_match('~(?:youtube\.com/(?:watch\?v=|shorts/|embed/)|youtu\.be/)([\w\-]{6,})~i', $youtubeUrl, $matches)) {
+          $ytId = $matches[1];
+        }
+      @endphp
 
-    a {
-        color: inherit
-    }
+      <div class="mt-4 media-frame">
+        @if($m->media_type === 'image' && $m->file_path)
+          <a href="{{ asset('storage/'.$m->file_path) }}" class="block inline-image" data-full="{{ asset('storage/'.$m->file_path) }}">
+            <img src="{{ asset('storage/'.$m->file_path) }}" alt="Post image" class="w-full max-h-[560px] object-cover rounded-xl">
+          </a>
 
-    .wrap {
-        max-width: 780px;
-        margin: 28px auto;
-        padding: 0 16px
-    }
+        @elseif($m->media_type === 'video' && $ytId)
+          <div class="aspect-video rounded-xl overflow-hidden bg-black">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/{{ $ytId }}?rel=0&modestbranding=1"
+              class="w-full h-full"
+              allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+          </div>
 
-    /* top bar (back + theme toggle) */
-    .bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px
-    }
+        @elseif($m->media_type === 'video' && $m->file_path)
+          <video controls playsinline src="{{ asset('storage/'.$m->file_path) }}" class="w-full max-h-[560px] object-cover rounded-xl"></video>
 
-    .back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        text-decoration: none
-    }
-
-    .back:hover {
-        color: color-mix(in oklab, var(--muted), #fff 20%)
-    }
-
-    .toggle {
-        padding: 7px 10px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--btn);
-        color: var(--btnText);
-        cursor: pointer;
-        font-size: 12px;
-        box-shadow: 0 6px 16px -10px rgba(2, 6, 23, .18);
-    }
-
-    .toggle:hover {
-        background: var(--btnHover);
-        outline: 0;
-        border-color: var(--ring)
-    }
-
-    /* Card */
-    .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        box-shadow: 0 1px 2px rgba(2, 6, 23, .08), 0 12px 36px -24px rgba(2, 6, 23, .45);
-    }
-
-    .pad {
-        padding: 22px
-    }
-
-    .row {
-        display: flex;
-        gap: 14px;
-        align-items: flex-start
-    }
-
-    .avatar {
-        width: 46px;
-        height: 46px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #6a7bff, #2dd4bf)
-    }
-
-    h1 {
-        font-size: 18px;
-        margin: 0
-    }
-
-    .meta {
-        color: var(--muted);
-        font-size: 13px;
-        margin-top: 2px
-    }
-
-    .desc {
-        white-space: normal;
-        margin-top: 10px;
-        color: color-mix(in oklab, var(--text), #fff 8%)
-    }
-
-    /* Media */
-    .media {
-        margin-top: 14px;
-        border-radius: 14px;
-        overflow: hidden;
-        background: #000
-    }
-
-    .media img,
-    .media video {
-        width: 100%;
-        display: block;
-        max-height: 560px;
-        object-fit: cover
-    }
-
-    .media a.inline-image {
-        display: block;
-        line-height: 0
-    }
-
-    .media iframe {
-        width: 100%;
-        aspect-ratio: 16/9;
-        border: 0;
-        display: block;
-        background: #000
-    }
-
-    /* Actions */
-    .actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--border)
-    }
-
-    .btn {
-        padding: 10px 14px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--btn);
-        color: var(--btnText);
-        cursor: pointer
-    }
-
-    .btn:hover {
-        background: var(--btnHover);
-        border-color: var(--ring)
-    }
-
-    /* Toast (center-bottom) */
-    .toast {
-        position: fixed;
-        left: 50%;
-        bottom: 24px;
-        transform: translateX(-50%) translateY(16px);
-        background: var(--toast);
-        color: var(--toastText);
-        border: 1px solid var(--border);
-        padding: 12px 16px;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(2, 6, 23, .35);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity .25s ease, transform .25s ease;
-        z-index: 60;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600
-    }
-
-    .toast.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0)
-    }
-
-    .toast .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--brand);
-        box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand), transparent 82%)
-    }
-
-    /* Lightbox */
-    .lightbox {
-        position: fixed;
-        inset: 0;
-        z-index: 70;
-        display: none
-    }
-
-    .lightbox.show {
-        display: block
-    }
-
-    .lb-backdrop {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, .8);
-        backdrop-filter: saturate(140%) blur(2px)
-    }
-
-    .lb-body {
-        position: relative;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px
-    }
-
-    .lb-img {
-        max-width: min(96vw, 1600px);
-        max-height: 90vh;
-        border-radius: 12px;
-        box-shadow: 0 10px 50px rgba(0, 0, 0, .6)
-    }
-
-    .lb-close {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        border: 1px solid var(--border);
-        background: var(--btn);
-        color: var(--btnText);
-        border-radius: 999px;
-        padding: 8px 11px;
-        cursor: pointer
-    }
-
-    .lb-close:hover {
-        background: var(--btnHover);
-        border-color: var(--ring)
-    }
-
-    .link {
-        color: var(--brand);
-        text-decoration: none
-    }
-
-    .link:hover {
-        text-decoration: underline
-    }
-    </style>
-
-    <!-- No-flicker dark boot -->
-    <script>
-    (function() {
-        const ls = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (ls === 'dark' || (!ls && prefersDark)) document.documentElement.classList.add('dark');
-    })();
-    </script>
-</head>
-
-<body>
-    <div class="wrap">
-        <div class="bar">
-            <a class="back" href="{{ url('/') }}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M15 18l-6-6 6-6" />
-                </svg>
-                Back
+        @elseif($m->media_type === 'url')
+          <div class="p-4">
+            <a href="{{ $m->file_path }}" target="_blank" rel="noopener" class="text-indigo-600 dark:text-indigo-300 hover:underline">
+              {{ $m->file_path }}
             </a>
-            <button id="themeToggle" class="toggle" type="button">Toggle Theme</button>
-        </div>
+          </div>
+        @endif
+      </div>
+    @endif
 
-        <article class="card">
-            <header class="pad row">
-                <div class="avatar" aria-hidden="true"></div>
-                <div>
-                    <h1>{{ $post->user->username ?? $post->user->email ?? 'User' }}</h1>
-                    <div class="meta">{{ $post->created_at?->diffForHumans() }}</div>
-                    @if($post->description)
-                    <div class="desc">
-                        <div class="post-desc" data-full='@json($post->description)'></div>
-                        <button type="button" class="readmore-btn"
-                            style="margin-top:6px;font-weight:600;color:var(--brand);background:none;border:0;cursor:pointer;display:none">
-                            Read more
-                        </button>
-                    </div>
-                    @endif
-                </div>
-            </header>
+    {{-- Actions --}}
+    <footer class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center justify-end">
+      <button id="shareBtn" class="btn btn-icon" type="button">Share</button>
+    </footer>
+  </article>
+</div>
 
-            {{-- Media --}}
-            @if($post->media->isNotEmpty())
-            @php
-            $m = $post->media->first();
-            $youtubeUrl = $m->youtube_url ?? null;
-            if (!$youtubeUrl && preg_match('~^https?://(www\.)?(youtube\.com|youtu\.be)/~i', $m->file_path)) {
-            $youtubeUrl = $m->file_path;
-            }
-            $ytId = null;
-            if ($youtubeUrl && preg_match('~(?:youtube\.com/(?:watch\?v=|shorts/|embed/)|youtu\.be/)([\w\-]{6,})~i',
-            $youtubeUrl, $matches)) {
-            $ytId = $matches[1];
-            }
-            @endphp
-            <div class="media">
-                @if($m->media_type === 'image')
-                <a href="{{ asset('storage/'.$m->file_path) }}" class="inline-image"
-                    data-full="{{ asset('storage/'.$m->file_path) }}" title="Open image">
-                    <img src="{{ asset('storage/'.$m->file_path) }}" alt="Post image">
-                </a>
-                @elseif($m->media_type === 'video' && $ytId)
-                <iframe src="https://www.youtube-nocookie.com/embed/{{ $ytId }}?rel=0&modestbranding=1" allowfullscreen
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                @elseif($m->media_type === 'video')
-                <video controls playsinline src="{{ asset('storage/'.$m->file_path) }}"></video>
-                @elseif($m->media_type === 'url')
-                <div class="pad">
-                    <a href="{{ $m->file_path }}" target="_blank" rel="noopener" class="link">{{ $m->file_path }}</a>
-                </div>
-                @endif
-            </div>
-            @endif
+{{-- Lightbox --}}
+<div id="lightbox" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-[2px]" data-close></div>
+  <div class="relative h-full flex items-center justify-center p-6">
+    <img id="lbImg" class="max-w-[96vw] max-h-[90vh] rounded-xl shadow-2xl" alt="Full-size image">
+    <button class="absolute top-4 right-4 btn-ghost" type="button" data-close aria-label="Close">✕</button>
+  </div>
+</div>
 
-            <div class="pad actions">
-                <button id="shareBtn" class="btn" type="button">Share</button>
-            </div>
-        </article>
-    </div>
+{{-- Toast (reuse your .toast styles if present) --}}
+<div id="toast" class="toast">
+  <span class="inline-block w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_0_4px_rgba(59,130,246,.18)]"></span>
+  <span id="toastText" class="text-sm font-semibold">Link copied</span>
+</div>
+@endsection
 
-    <!-- Toast -->
-    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true">
-        <span class="dot"></span>
-        <span id="toastText">Link copied</span>
-    </div>
-
-    <!-- Image Lightbox -->
-    <div id="lightbox" class="lightbox" aria-hidden="true">
-        <div class="lb-backdrop" data-close></div>
-        <div class="lb-body">
-            <img class="lb-img" id="lbImg" alt="Full-size image">
-            <button class="lb-close" type="button" data-close aria-label="Close">✕</button>
-        </div>
-    </div>
-
-    <script>
-    // Theme toggle (persisted)
-    document.getElementById('themeToggle')?.addEventListener('click', () => {
-        const html = document.documentElement;
-        const isDark = html.classList.toggle('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
-
-    // Toast
-    const toast = document.getElementById('toast');
-    const toastText = document.getElementById('toastText');
-    let toastTimer;
-
-    function showToast(msg = 'Done') {
-        toastText.textContent = msg;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
-    }
-
-    // Share (Web Share API + clipboard fallback)
-    document.getElementById('shareBtn')?.addEventListener('click', async () => {
-        const url = window.location.href;
-        try {
-            if (navigator.share && window.isSecureContext) {
-                await navigator.share({
-                    title: document.title,
-                    url
-                });
-                return;
-            }
-        } catch (_) {}
-        try {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(url);
-                showToast('Link copied');
-                return;
-            }
-        } catch (_) {}
-        const ta = document.createElement('textarea');
-        ta.value = url;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        ta.style.left = '-9999px';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
+@push('page_scripts')
+<script>
+  // Share
+  document.getElementById('shareBtn')?.addEventListener('click', async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share && window.isSecureContext) {
+        await navigator.share({ title: document.title, url });
+        return;
+      }
+    } catch (_) {}
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
         showToast('Link copied');
-    });
+        return;
+      }
+    } catch (_) {}
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.setAttribute('readonly','');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); ta.remove();
+    showToast('Link copied');
+  });
 
-    // Lightbox (open on image click; close on backdrop/close/ESC)
+  // Center toast helper (same as your index/public pages)
+  function showToast(msg = 'Done') {
+    const t = document.getElementById('toast');
+    const tx = document.getElementById('toastText');
+    if (!t || !tx) return;
+    tx.textContent = msg;
+    t.classList.add('is-visible');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('is-visible'), 1600);
+  }
+
+  // Lightbox
+  (function(){
     const lb = document.getElementById('lightbox');
     const lbImg = document.getElementById('lbImg');
-
-    document.querySelector('.media a.inline-image')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        const full = e.currentTarget.getAttribute('data-full') || e.currentTarget.href;
-        lbImg.src = full;
-        lb.style.display = 'block';
-        requestAnimationFrame(() => lb.classList.add('show'));
-        lb.setAttribute('aria-hidden', 'false');
+    document.querySelector('.inline-image')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const full = e.currentTarget.getAttribute('data-full') || e.currentTarget.href;
+      lbImg.src = full;
+      lb.classList.remove('hidden');
     });
+    lb?.addEventListener('click', (e) => { if (e.target.hasAttribute('data-close')) { lb.classList.add('hidden'); lbImg.removeAttribute('src'); }});
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { lb.classList.add('hidden'); lbImg.removeAttribute('src'); }});
+  })();
 
-    function closeLB() {
-        lb.classList.remove('show');
-        lb.setAttribute('aria-hidden', 'true');
-        setTimeout(() => {
-            lb.style.display = 'none';
-            lbImg.removeAttribute('src');
-        }, 150);
-    }
-    lb?.addEventListener('click', (e) => {
-        if (e.target.hasAttribute('data-close')) closeLB();
+  // Description “Read more” (match other pages)
+  (function enhanceDescription() {
+    const MAX_WORDS = 250, LINE_CLAMP = 4;
+    const block = document.querySelector('.post-desc');
+    if (!block) return;
+    const btn = document.querySelector('.readmore-btn');
+
+    const escapeHTML = (s) => String(s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+    const linkify = (text) => text.replace(/\b((https?:\/\/|www\.)[^\s<]+[^\s<\.)])/gi, (m) => {
+      const href = m.startsWith('http') ? m : 'https://' + m;
+      return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline break-words">${m}</a>`;
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeLB();
-    });
+    const nl2br = (s) => s.replace(/\n/g,'<br>');
+    const applyClamp = (el, on) => {
+      if (on) { el.style.display='-webkit-box'; el.style.webkitBoxOrient='vertical'; el.style.webkitLineClamp=String(LINE_CLAMP); el.style.overflow='hidden'; }
+      else { el.style.display=''; el.style.webkitBoxOrient=''; el.style.webkitLineClamp=''; el.style.overflow=''; }
+    };
+    const truncateWords = (s,max) => {
+      const words = s.trim().split(/\s+/); if (words.length <= max) return [s,false];
+      return [words.slice(0,max).join(' ') + '…', true];
+    };
+    const decodeData = (el) => {
+      const raw = el.dataset.full ?? ''; try { if (raw[0]==='"' || /\\u[0-9a-fA-F]{4}/.test(raw)) return JSON.parse(raw); } catch(_) {}
+      return raw;
+    };
+    const render = (txt) => {
+      let safe = escapeHTML(txt);
+      safe = safe.replace(/\n{2,}/g,'\n');
+      return nl2br(linkify(safe));
+    };
 
-    (function enhanceDescription() {
-        const MAX_WORDS = 250;
-        const LINE_CLAMP = 4;
+    const fullText = decodeData(block);
+    const [truncText, wasTrimmed] = truncateWords(fullText, MAX_WORDS);
+    block.innerHTML = render(truncText); applyClamp(block,true);
 
-        const block = document.querySelector('.post-desc');
-        if (!block) return;
+    let needsToggle = wasTrimmed;
+    requestAnimationFrame(() => {
+      const tmp = document.createElement('div');
+      tmp.className = block.className; tmp.style.position='absolute'; tmp.style.visibility='hidden';
+      tmp.style.width = block.clientWidth + 'px'; tmp.innerHTML = render(fullText);
+      document.body.appendChild(tmp); const fullH = tmp.scrollHeight; document.body.removeChild(tmp);
+      const clampedH = block.getBoundingClientRect().height;
+      if (fullH > clampedH) needsToggle = true;
 
-        const btn = document.querySelector('.readmore-btn');
-
-        // helpers
-        const escapeHTML = (s) => String(s)
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-
-        const linkify = (text) => {
-            const urlRe = /\b((https?:\/\/|www\.)[^\s<]+[^\s<\.)])/gi;
-            return text.replace(urlRe, (m) => {
-                const href = m.startsWith('http') ? m : 'https://' + m;
-                return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="link">${m}</a>`;
-            });
-        };
-
-        const nl2br = (s) => s.replace(/\n/g, '<br>');
-        const collapseBr = (html) => html.replace(/(?:<br\s*\/?>\s*){2,}/gi, '<br>');
-
-        const applyClamp = (el, on) => {
-            if (on) {
-                el.style.display = '-webkit-box';
-                el.style.webkitBoxOrient = 'vertical';
-                el.style.webkitLineClamp = String(LINE_CLAMP);
-                el.style.overflow = 'hidden';
-            } else {
-                el.style.display = '';
-                el.style.webkitBoxOrient = '';
-                el.style.webkitLineClamp = '';
-                el.style.overflow = '';
-            }
-        };
-
-        const truncateWords = (s, max) => {
-            const words = s.trim().split(/\s+/);
-            if (words.length <= max) return [s, false];
-            return [words.slice(0, max).join(' ') + '…', true];
-        };
-
-        const decodeData = (el) => {
-            const raw = el.dataset.full ?? '';
-            try {
-                if (raw[0] === '"' || /\\u[0-9a-fA-F]{4}/.test(raw)) return JSON.parse(raw);
-            } catch (_) {}
-            return raw;
-        };
-
-        // render with exactly 1-line spacing
-        const render = (txt) => {
-            // Escape + linkify
-            let safe = escapeHTML(txt);
-
-            // Collapse double or more newlines into a single newline
-            safe = safe.replace(/\n{2,}/g, '\n');
-
-            // Convert single newlines into <br>
-            safe = nl2br(linkify(safe));
-
-            return safe;
-        };
-
-        const fullText = decodeData(block);
-        const [truncText, wasTrimmed] = truncateWords(fullText, MAX_WORDS);
-
-        // initial paint: truncated + 4-line clamp
-        block.innerHTML = render(truncText);
-        applyClamp(block, true);
-
-        // decide if toggle is needed
-        let needsToggle = wasTrimmed;
-        requestAnimationFrame(() => {
-            // measure full content height
-            const tmp = document.createElement('div');
-            tmp.className = block.className;
-            tmp.style.position = 'absolute';
-            tmp.style.visibility = 'hidden';
-            tmp.style.width = block.clientWidth + 'px';
-            tmp.innerHTML = render(fullText);
-            document.body.appendChild(tmp);
-            const fullH = tmp.scrollHeight;
-            document.body.removeChild(tmp);
-
-            const clampedH = block.getBoundingClientRect().height;
-            if (fullH > clampedH) needsToggle = true;
-
-            if (needsToggle && btn) {
-                btn.style.display = 'inline'; // show button
-                let expanded = false;
-                btn.addEventListener('click', () => {
-                    expanded = !expanded;
-                    if (expanded) {
-                        block.innerHTML = render(fullText);
-                        applyClamp(block, false);
-                        btn.textContent = 'Read less';
-                    } else {
-                        block.innerHTML = render(truncText);
-                        applyClamp(block, true);
-                        btn.textContent = 'Read more';
-                    }
-                });
-            }
+      if (needsToggle && btn) {
+        btn.classList.remove('hidden');
+        let expanded = false;
+        btn.addEventListener('click', () => {
+          expanded = !expanded;
+          if (expanded) { block.innerHTML = render(fullText); applyClamp(block,false); btn.textContent='Read less'; }
+          else { block.innerHTML = render(truncText); applyClamp(block,true); btn.textContent='Read more'; }
         });
-    })();
-    </script>
-</body>
-
-</html>
+      }
+    });
+  })();
+</script>
+@endpush
