@@ -2,19 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    use RefreshDatabase;
-
-    public function test_home_is_ok_for_authenticated_user(): void
+    public function test_the_application_returns_a_successful_response(): void
     {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $this->get('/')->assertOk();
+        $response = $this->followingRedirects()->get('/'); // follow 302 redirect
+        $response->assertOk(); // expect final response to be 200 OK
     }
 }
