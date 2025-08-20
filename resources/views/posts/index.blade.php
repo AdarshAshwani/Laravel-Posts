@@ -30,8 +30,16 @@
                     <span class="text-xs text-slate-500">{{ $post->created_at->diffForHumans() }}</span>
                 </div>
                 @if($post->description)
-                <p class="mt-1 text-slate-700 dark:text-slate-200 whitespace-pre-line leading-7">
-                    {{ $post->description }}</p>
+                <div class="mt-1 text-slate-200 dark:text-slate-800 leading-7">
+                    <div class="post-desc break-words" data-full='@json($post->description)'
+                        data-json="1">
+                    </div>
+
+                    <button type="button"
+                        class="readmore-btn text-sm font-semibold text-blue-600 hover:underline mt-1 hidden">
+                        Read more
+                    </button>
+                </div>
                 @endif
             </div>
         </header>
@@ -156,7 +164,7 @@
                 <label class="block text-sm font-semibold mb-1">Upload Image</label>
                 <div id="pmDrop"
                     class="uploader rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50/60 dark:bg-slate-900/40 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition">
-                    <input id="pmFile" type="file" name="media[]" accept=".jpg,.jpeg,.png" class="hidden">
+                    <input id="pmFile" type="file" name="media[]" accept="image/*" class="hidden">
                     <div class="flex items-center justify-center gap-2">📁 <span>Click or drop one image</span></div>
                 </div>
                 <div id="pmPreview" class="mt-3"></div>
@@ -453,24 +461,6 @@ document.querySelectorAll('.open-edit').forEach(btn => {
     });
 });
 
-function setSingle(file) {
-    const allowedTypes = ['image/jpeg', 'image/png'];
-    const extAllowed = /\.(jpe?g|png)$/i.test(file.name);
-
-    if (!allowedTypes.includes(file.type) || !extAllowed) {
-        showToast('Only JPG, JPEG, and PNG images are allowed');
-        pmFile.value = ''; // clear file
-        pmPreview.innerHTML = '';
-        return;
-    }
-
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    pmFile.files = dt.files;
-    pmPreview.innerHTML = `<img src="${URL.createObjectURL(file)}" class="w-full h-40 object-cover rounded-xl mt-2">`;
-    pmRemoveMedia.value = '0';
-}
-
 // ===== Guard: media required rules
 pmForm?.addEventListener('submit', (e) => {
     clearInvalid();
@@ -577,6 +567,128 @@ pmForm?.addEventListener('submit', (e) => {
             doShare(url);
         }, {
             passive: false
+        });
+    });
+})();
+
+(function enhanceDescriptions() {
+    const MAX_WORDS = 250;   // initial word cap
+    const LINE_CLAMP = 4;    // initial line cap
+
+    const blocks = document.querySelectorAll('.post-desc');
+    if (!blocks.length) return;
+
+    // --- helpers ---
+    const escapeHTML = (s) =>
+        String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+
+    const linkify = (text) => {
+        // https://…, http://…, or www….
+        const urlRe = /\b((https?:\/\/|www\.)[^\s<]+[^\s<\.)])/gi;
+        return text.replace(urlRe, (m) => {
+            const href = m.startsWith('http') ? m : 'https://' + m;
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline break-words">${m}</a>`;
+        });
+    };
+
+    const nl2br = (s) => s.replace(/\n/g, '<br>');
+
+    const applyClamp = (el, on) => {
+        if (on) {
+            el.style.display = '-webkit-box';
+            el.style.webkitBoxOrient = 'vertical';
+            el.style.webkitLineClamp = String(LINE_CLAMP);
+            el.style.overflow = 'hidden';
+        } else {
+            el.style.display = '';
+            el.style.webkitBoxOrient = '';
+            el.style.webkitLineClamp = '';
+            el.style.overflow = '';
+        }
+    };
+
+    const truncateWords = (s, max) => {
+        const words = s.trim().split(/\s+/);
+        if (words.length <= max) return [s, false];
+        return [words.slice(0, max).join(' ') + '…', true];
+    };
+
+    const decodeData = (el) => {
+        const raw = el.dataset.full ?? '';
+        try {
+            // Quick heuristic: if it starts with a quote or contains \uXXXX, parse it.
+            if (raw[0] === '"' || /\\u[0-9a-fA-F]{4}/.test(raw)) {
+                return JSON.parse(raw);
+            }
+        } catch (_) {}
+        return raw;
+    };
+
+    // --- render each description ---
+    blocks.forEach((el) => {
+        const container = el.parentElement;                 // wraps the button
+        const btn = container.querySelector('.readmore-btn');
+
+        const fullText = decodeData(el);                    // <- fixes \uXXXX
+        const [truncText, wasWordTrimmed] = truncateWords(fullText, MAX_WORDS);
+
+        const render = (txt) => {
+            // Escape + linkify
+            let safe = escapeHTML(txt);
+
+            // Collapse double newlines to single (so no big gaps)
+            safe = safe.replace(/\n{2,}/g, '\n');
+
+            // Convert newlines into <br>
+            safe = nl2br(linkify(safe));
+
+            return safe;
+        };
+
+        // Initial paint: truncated text + clamp to 4 lines
+        el.innerHTML = render(truncText);
+        applyClamp(el, true);
+
+        // Decide if toggle is needed (word-trimmed OR visually over 4 lines)
+        let needsToggle = wasWordTrimmed;
+
+        requestAnimationFrame(() => {
+            // Measure full height
+            const temp = document.createElement('div');
+            temp.className = el.className;
+            temp.style.position = 'absolute';
+            temp.style.visibility = 'hidden';
+            temp.style.width = el.clientWidth + 'px';
+            temp.innerHTML = render(fullText);
+            document.body.appendChild(temp);
+            const fullH = temp.scrollHeight;
+            document.body.removeChild(temp);
+
+            const clampedH = el.getBoundingClientRect().height;
+            if (fullH > clampedH) needsToggle = true;
+
+            if (needsToggle && btn) {
+                btn.classList.remove('hidden');
+                let expanded = false;
+
+                btn.addEventListener('click', () => {
+                    expanded = !expanded;
+                    if (expanded) {
+                        el.innerHTML = render(fullText);
+                        applyClamp(el, false);
+                        btn.textContent = 'Read less';
+                    } else {
+                        el.innerHTML = render(truncText);
+                        applyClamp(el, true);
+                        btn.textContent = 'Read more';
+                    }
+                });
+            }
         });
     });
 })();
