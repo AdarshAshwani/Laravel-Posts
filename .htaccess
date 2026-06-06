@@ -1,23 +1,47 @@
-# public_html/dailylogs/.htaccess
+# =============================================================================
+#  Portable front controller for serving this Laravel app from the PROJECT ROOT
+#  (keeps "/public" out of every URL) and works from ANY location with no edits:
+#    - domain root            ->  http://example.com/
+#    - a sub-folder           ->  http://example.com/Laravel-Posts/
+#    - any other folder name  ->  http://example.com/anything/
+#
+#  HOW: there is NO "RewriteBase" line on purpose. All rules below use relative,
+#  internal rewrites, so Apache resolves them against whatever directory the app
+#  is installed in. Drop the project anywhere under the web root and it just works.
+# =============================================================================
+
 <IfModule mod_rewrite.c>
     Options -MultiViews -Indexes
     RewriteEngine On
-    RewriteBase /story/
 
-    # Serve files that actually exist
+    # 1) If the request is for a real file or directory at the project root,
+    #    serve it as-is (lets DirectoryIndex run index.php for the home page).
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # Map common public assets without exposing /public
-    RewriteRule ^(favicon\.ico|robots\.txt)$ public/$1 [L,NC]
-    RewriteRule ^(build|assets|css|js|images|img|fonts|vendor|storage)/(.*)$ public/$1/$2 [L,NC]
+    # 2) Serve assets that physically live in /public WITHOUT exposing /public in
+    #    the URL: Vite build output, the storage symlink, favicon, robots, etc.
+    #    (These are internal rewrites, so the browser URL stays clean.)
+    RewriteRule ^(favicon\.ico|robots\.txt|sitemap\.xml)$ public/$1 [L,NC]
+    RewriteRule ^(build|assets|css|js|images|img|fonts|media|vendor|storage)/(.*)$ public/$1/$2 [L,NC]
 
-    # Everything else -> our local index.php (shim)
+    # 3) Everything else -> the root index.php shim. The shim boots
+    #    public/index.php while keeping the application's base path at the
+    #    project root, so all generated links/assets are correct and never
+    #    contain "/public".
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Block sensitive files if guessed directly
-<FilesMatch "^(\.env|artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|webpack\.mix\.js|vite\.config\.js|server\.php)$">
-  Require all denied
+# If mod_rewrite is unavailable, fall back to index.php as the directory index.
+<IfModule mod_dir.c>
+    DirectoryIndex index.php
+</IfModule>
+
+# -----------------------------------------------------------------------------
+#  Hard-block direct web access to sensitive project files if guessed by URL.
+#  (Defense in depth — they should never be reachable through the rewrites above.)
+# -----------------------------------------------------------------------------
+<FilesMatch "^(\.env.*|\.git.*|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|artisan|server\.php|\.version|\.editorconfig)$">
+    Require all denied
 </FilesMatch>
